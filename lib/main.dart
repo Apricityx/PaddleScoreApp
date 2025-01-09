@@ -46,10 +46,10 @@ class MyApp extends StatelessWidget {
       routes: {
         '/home': (context) => MyHomePage(),
         '/create': (context) => CreateRacePage(),
-        '/race/:raceName': (context) {
-          final raceName = ModalRoute.of(context)!.settings.arguments as String;
-          return RacePage(raceName: raceName);
-        }
+        // '/race/:raceName': (context) {
+        //   final raceName = ModalRoute.of(context)!.settings.arguments as String;
+        //   return RacePage(raceName: raceName);
+        // }
       },
     );
   }

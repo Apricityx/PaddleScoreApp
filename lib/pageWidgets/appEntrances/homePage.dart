@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:paddle_score_app/DataHelper.dart';
+import 'package:paddle_score_app/pageWidgets/appEntrances/racesEntrancePage.dart';
 import 'package:provider/provider.dart';
 import '../../main.dart';
 import '../../utils/ExcelAnalyzer.dart';
@@ -185,19 +186,32 @@ class _HomePageContent extends State<HomePageContent>{
                         });
                       },
                       initiallyExpanded: true,
-                      children: const [
-                        ListTile(
-                          title: Text('赛事1'),
-                          subtitle: Text('运动员名单'),
-                        ),
-                        ListTile(
-                          title: Text('赛事2'),
-                          subtitle: Text('运动员名单'),
-                        ),
-                        ListTile(
-                          title: Text('赛事3'),
-                          subtitle: Text('运动员名单'),
-                        ),
+                      children: [
+                        SizedBox(
+                         child:ListTile(
+                           title: Text(_raceNameController.text),
+                           subtitle: const Text('点滴查看赛事详情'),
+                           onTap: (){
+                             // 跳转到 RacePage 并传递参数
+                             Navigator.push(
+                               context,
+                               MaterialPageRoute(
+                                 builder: (context) => RacePage(
+                                   raceName: _raceNameController.text, // 传递赛事名称
+                                ),
+                             ),
+                             );
+                           },
+                         ),
+                        )
+                        // ListTile(
+                        //   title: Text('赛事2'),
+                        //   subtitle: Text('运动员名单'),
+                        // ),
+                        // ListTile(
+                        //   title: Text('赛事3'),
+                        //   subtitle: Text('运动员名单'),
+                        // ),
                       ],
                     ),
                   ),
