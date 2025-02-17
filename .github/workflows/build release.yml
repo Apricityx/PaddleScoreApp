@@ -1,10 +1,10 @@
-name: Flutter Windows Release
+name: Flutter Windows, Linux, macOS, and Android Release
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build-windows:
@@ -17,7 +17,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.x'  # 根据需要指定 Flutter 版本
+          flutter-version: '3.x'
 
       - name: Enable Windows Desktop Support
         run: flutter config --enable-windows-desktop
@@ -47,7 +47,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.x'  # 根据需要指定 Flutter 版本
+          flutter-version: '3.x'
 
       - name: Install dependencies for Linux build
         run: |
@@ -71,3 +71,57 @@ jobs:
         with:
           name: linux-release
           path: build/linux/x64/release/bundle/
+
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+
+      - name: Enable macOS Desktop Support
+        run: flutter config --enable-macos-desktop
+
+      - name: Add macOS Platform Support
+        run: flutter create --platforms=macos .
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Build macOS Release
+        run: flutter build macos --release
+
+      - name: Upload macOS Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release
+          path: build/macos/Build/Products/Release/
+
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Build Android APK
+        run: flutter build apk --release
+
+      - name: Upload Android APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
