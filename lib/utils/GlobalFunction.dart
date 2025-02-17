@@ -27,7 +27,7 @@ Future<List<String>> getDivisions(String dbName) async {
   List<Map<String, dynamic>> maps =
       await db.rawQuery('SELECT DISTINCT division FROM athletes');
   var result = maps.map((map) => map['division'] as String).toList();
-  print(result);
+  printDebug(result);
   return result;
 }
 
@@ -219,4 +219,18 @@ Future<void> insertProgress(
         },
         conflictAlgorithm: ConflictAlgorithm.replace);
   });
+}
+
+/// 输出到日志
+Future<void> printDebug(dynamic content) async {
+  print(content);
+  final logDirectory = Directory('log');
+  final logFile = File('log/latest.log');
+  if (!await logDirectory.exists()) {
+    await logDirectory.create(recursive: true);
+  }
+  if (!await logFile.exists()) {
+    await logFile.create(recursive: true);
+  }
+  await logFile.writeAsString('${content.toString()}\n', mode: FileMode.append);
 }

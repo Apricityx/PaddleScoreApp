@@ -39,11 +39,11 @@ class _HomePageContent extends State<HomePageContent> {
   //       setState(() {
   //         _selectedFile = result;
   //         bytes = File(result.paths.first!).readAsBytesSync();
-  //         // print(_selectedFile);
+  //         // printDebug(_selectedFile);
   //       });
   //     }
   //   } catch (e) {
-  //     print('Error: $e');
+  //     printDebug('Error: $e');
   //   }
   // }
 
@@ -388,18 +388,18 @@ class _HomePageContent extends State<HomePageContent> {
 
     // 获取前三个文件名，如果文件数量少于 3 个，则返回所有文件名
     final top3Files = files.take(3).toList();
-    print(top3Files);
+    // printDebug("TOP3FILES:$top3Files");
     // 转换为文件名
     final fileNames =
         top3Files.map((file) => file.uri.pathSegments.last).toList();
+    // printDebug("FILENAMES:$fileNames");
     String fileName;
     try {
       fileName = fileNames[count].substring(0, fileNames[count].length - 3);
     } catch (e) {
-      print("请求的index不存在，返回尚未创建");
+      printDebug("请求的index不存在，返回尚未创建");
       fileName = '尚未创建';
     }
-
     return fileName;
   }
 }

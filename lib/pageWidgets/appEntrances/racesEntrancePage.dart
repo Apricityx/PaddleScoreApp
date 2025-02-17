@@ -31,7 +31,6 @@ class RacePage extends StatefulWidget {
 }
 
 class _RacePage extends State<RacePage> {
-
   final String raceName;
 
   _RacePage(this.raceName);
@@ -144,10 +143,10 @@ class _RacePage extends State<RacePage> {
                       } else {
                         File file = File(filePath);
 
-                        print("!!TEST!!$choice");
+                        // printDebug("!!TEST!!$choice");
 
                         await file.writeAsBytes(finalScoreBinary);
-                        print("文件已保存到:$filePath");
+                        printDebug("文件已保存到:$filePath");
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('积分表下载完成')),
                         );

@@ -17,19 +17,23 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.x'
+          flutter-version: '3.29.0'
 
       - name: Enable Windows Desktop Support
         run: flutter config --enable-windows-desktop
 
-      - name: Add Windows Platform Support
-        run: flutter create --platforms=windows .
+      # - name: Add Windows Platform Support
+        # run: flutter create --platforms=windows .
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build Windows Release
         run: flutter build windows --release
+
+      - name: Copy SQLite3.dll
+        run: copy lib\assets\SQLite3.dll build\windows\x64\runner\Release\SQLite3.dll
+        shell: cmd
 
       - name: Upload Windows Release Artifact
         uses: actions/upload-artifact@v4
@@ -47,7 +51,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.x'
+          flutter-version: '3.29.0'
 
       - name: Install dependencies for Linux build
         run: |
@@ -57,8 +61,8 @@ jobs:
       - name: Enable Linux Desktop Support
         run: flutter config --enable-linux-desktop
 
-      - name: Add Linux Platform Support
-        run: flutter create --platforms=linux .
+      # - name: Add Linux Platform Support
+        # run: flutter create --platforms=linux .
 
       - name: Install Flutter dependencies
         run: flutter pub get
@@ -82,13 +86,13 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.x'
+          flutter-version: '3.29.0'
 
       - name: Enable macOS Desktop Support
         run: flutter config --enable-macos-desktop
 
-      - name: Add macOS Platform Support
-        run: flutter create --platforms=macos .
+      # - name: Add macOS Platform Support
+        # run: flutter create --platforms=macos .
 
       - name: Install Flutter dependencies
         run: flutter pub get
@@ -112,7 +116,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.x'
+          flutter-version: '3.29.0'
 
       - name: Install Flutter dependencies
         run: flutter pub get

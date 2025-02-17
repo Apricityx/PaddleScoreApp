@@ -393,7 +393,7 @@ void main() {
 
     //stopwatch.reset();
     List<int>? fileBytes = excel.save();
-    //print('saving executed in ${stopwatch.elapsed}');
+    //printDebug('saving executed in ${stopwatch.elapsed}');
     if (fileBytes != null) {
       File(Directory.current.path + '/tmp/exampleOut.xlsx')
         ..createSync(recursive: true)

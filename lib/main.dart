@@ -9,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 // import 'package:paddle_score_app/pageWidgets/appEntrances/racesEntrance.dart';
 import 'package:paddle_score_app/pageWidgets/appEntrances/racesEntrancePage.dart';
 import 'package:paddle_score_app/pageWidgets/appEntrances/settingsPage.dart';
+import 'package:paddle_score_app/utils/GlobalFunction.dart';
 import 'package:paddle_score_app/utils/Routes.dart';
 import 'package:paddle_score_app/utils/SettingService.dart';
 
@@ -145,7 +146,7 @@ class MyAppState extends ChangeNotifier {
         .where((entity) => entity is File && p.extension(entity.path) == '.db')
         .map((entity) => p.basenameWithoutExtension(entity.path))
         .toList();
-    print(races);
+    printDebug(races);
     notifyListeners();
   }
 }

@@ -28,8 +28,7 @@ class _SprintRacePageState extends State<ShortDistancePage> {
       divisions =
           divisions.where((element) => element.startsWith('U')).toList();
     } else {
-      divisions =
-          divisions.toList();
+      divisions = divisions.toList();
     }
     return divisions;
   }
@@ -165,36 +164,37 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                           children: [
                             /// 搜索框
                             Expanded(
-                              child: TypeAheadField<String>(
-                                suggestionsCallback: (pattern) {
-                                  return divisions.where((division) => division.contains(pattern)).toList();
-                                },
-                                builder: (context, controller, focusNode) {
-                                  return TextField(
-                                    controller: controller,
-                                    focusNode: focusNode,
-                                    onSubmitted: (text) {
-                                      performSearch(text, tempContext);
-                                    },
-                                    decoration: InputDecoration(
-                                      hintText: '搜索组别',
-                                    ),
-                                  );
-                                },
-                                itemBuilder: (context, suggestion) => ListTile(
-                                  title: Text(suggestion),
-                                  onTap: () {
-                                    _typeAheadController.text = suggestion;
-                                    performSearch(suggestion, tempContext);
+                                child: TypeAheadField<String>(
+                              suggestionsCallback: (pattern) {
+                                return divisions
+                                    .where((division) =>
+                                        division.contains(pattern))
+                                    .toList();
+                              },
+                              builder: (context, controller, focusNode) {
+                                return TextField(
+                                  controller: controller,
+                                  focusNode: focusNode,
+                                  onSubmitted: (text) {
+                                    performSearch(text, tempContext);
                                   },
-                                ),
-                                onSelected: (suggestion) {
+                                  decoration: InputDecoration(
+                                    hintText: '搜索组别',
+                                  ),
+                                );
+                              },
+                              itemBuilder: (context, suggestion) => ListTile(
+                                title: Text(suggestion),
+                                onTap: () {
                                   _typeAheadController.text = suggestion;
                                   performSearch(suggestion, tempContext);
                                 },
-                              )
-
-                            ),
+                              ),
+                              onSelected: (suggestion) {
+                                _typeAheadController.text = suggestion;
+                                performSearch(suggestion, tempContext);
+                              },
+                            )),
                           ],
                         ),
                       ));
@@ -241,8 +241,7 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                   return const Text('共--人，--轮比赛');
                 }
               }),
-              children:
-              const [
+              children: const [
                 Text("Under Construction"),
                 // Stack(
                 //   children: [
@@ -280,17 +279,16 @@ class _SprintRacePageState extends State<ShortDistancePage> {
         child: FutureBuilder(future: () async {
           var raceType = widget.raceBar.contains('趴板') ? '趴板' : '竞速';
           var raceNames = await getRaceProcess(division);
-          print(raceNames);
+          printDebug(raceNames);
 
           /// 返回一个List,为每一个比赛阶段的名称
           List raceData = [];
           for (var i = 0; i < raceNames.length; i++) {
-            try
-            {
+            try {
               DataState dataState;
               // 两种情况,一种为初赛,一种为决赛
-              print("i = $i");
-              print("raceNames[i] = ${raceNames[i]}");
+              printDebug("i = $i");
+              printDebug("raceNames[i] = ${raceNames[i]}");
               if (i == 0) {
                 dataState = DataState(
                     prevImported: true,
@@ -310,13 +308,12 @@ class _SprintRacePageState extends State<ShortDistancePage> {
 
               /// List的格式
               raceData.add({'name': raceNames[i], 'states': dataState});
-              print(raceData);
+              printDebug(raceData);
+            } catch (e) {
+              printDebug(e.toString());
             }
-            catch(e){
-              print(e.toString());
           }
-          }
-          print(raceData.toString());
+          printDebug(raceData.toString());
           return raceData;
         }(), builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
@@ -335,6 +332,7 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                     index: index,
                     onStatusChanged: _onRaceStageStatusChanged,
                     dataState: snapshot.data![index]["states"],
+
                     /// 一组信息
                   );
                 },
@@ -373,7 +371,8 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                                       title: Text(snapshot.data![index]),
                                       hoverColor: Colors.grey[200],
                                       onTap: () {
-                                        print('点击了 ${snapshot.data![index]}');
+                                        printDebug(
+                                            '点击了 ${snapshot.data![index]}');
                                         Provider.of<RightStateNotifier>(context,
                                                 listen: false)
                                             .setDivision(snapshot.data![index]);
@@ -397,7 +396,8 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                                       hoverColor: Colors.grey[200],
                                       title: Text(snapshot.data![index]),
                                       onTap: () {
-                                        print('点击了 ${snapshot.data![index]}');
+                                        printDebug(
+                                            '点击了 ${snapshot.data![index]}');
                                         Provider.of<RightStateNotifier>(context,
                                                 listen: false)
                                             .setDivision(snapshot.data![index]);
@@ -418,7 +418,7 @@ class _SprintRacePageState extends State<ShortDistancePage> {
 
 /// 用于右侧的状态管理
 class RightStateNotifier extends ChangeNotifier {
-  String _selectedDivision = 'U9组男子';
+  String _selectedDivision = '请在左边选择';
 
   void setDivision(String division) {
     _selectedDivision = division;
