@@ -322,8 +322,8 @@ class _HomePageContent extends State<HomePageContent> {
                                                       DateTime.now().isAfter(
                                                               DateTime(
                                                                   2000 + 25,
-                                                                  1 + 1,
-                                                                  27))
+                                                                  1 + 2,
+                                                                  10))
                                                           ? 'null'
                                                           : '/create',
                                                       arguments: _raceNameController
