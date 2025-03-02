@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
+import 'package:paddle_score_app/utils/GlobalFunction.dart';
 
 class CreateRaceExcelChecker {
   /// 获取有哪些组别
@@ -38,10 +39,52 @@ class CreateRaceExcelChecker {
     var sheet = excel.tables.keys.first;
     var rows = excel.tables[sheet]!.rows;
 
-    /// 验证ID
+    /// 1. ID不能重复
+    result.numberNoDuplicate = true;
+    List<String> numberSet = [];
     for (var i = 1; i < rows.length; i++) {
-      if (rows[i][1]?.value == null) {
-        result.numberValidated = false; // 有空值
+      numberSet.add(rows[i][1]!.value.toString());
+    }
+    if (numberSet.toSet().length != numberSet.length) {
+      print(numberSet.toSet().length != numberSet.length);
+      printDebug('ID重复', level: 1);
+      result.numberNoDuplicate = false;
+    }
+
+    /// 2. ID不能为非数字或为空
+    result.numberNoIllegalChar = true;
+    for (var id in numberSet) {
+      if (!RegExp(r'^\d+$').hasMatch(id) || id == '') {
+        printDebug('ID非数字或为空', level: 1);
+        result.numberNoIllegalChar = false;
+      }
+    }
+
+    /// 3. 组别中不能有空格
+    result.divisionNameNoIllegalChar = true;
+    for (var i = 1; i < rows.length; i++) {
+      if (rows[i][0]?.value == null ||
+          rows[i][0]!.value.toString().contains(' ')) {
+        printDebug('组别中有空格', level: 1);
+        result.divisionNameNoIllegalChar = false;
+      }
+    }
+
+    /// 4. 运动员名不能为空
+    result.athleteNameNoEmpty = true;
+    for (var i = 1; i < rows.length; i++) {
+      if (rows[i][2]?.value == null || rows[i][2]!.value.toString() == '') {
+        printDebug('运动员名为空', level: 1);
+        result.athleteNameNoEmpty = false;
+      }
+    }
+
+    /// 5. 队伍名不能为空
+    result.teamNoEmpty = true;
+    for (var i = 1; i < rows.length; i++) {
+      if (rows[i][3]?.value == null || rows[i][3]!.value.toString() == '') {
+        printDebug('队伍名为空', level: 1);
+        result.teamNoEmpty = false;
       }
     }
     return result;
@@ -49,7 +92,16 @@ class CreateRaceExcelChecker {
 }
 
 class ValidExcelResult {
-  bool numberValidated;
+  bool numberNoIllegalChar;
+  bool numberNoDuplicate;
+  bool divisionNameNoIllegalChar;
+  bool athleteNameNoEmpty;
+  bool teamNoEmpty;
 
-  ValidExcelResult() : numberValidated = true;
+  ValidExcelResult()
+      : numberNoIllegalChar = false,
+        numberNoDuplicate = false,
+        divisionNameNoIllegalChar = false,
+        athleteNameNoEmpty = false,
+        teamNoEmpty = false;
 }

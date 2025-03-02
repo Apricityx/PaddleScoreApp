@@ -74,4 +74,9 @@ class DatabaseManager {
         .rawQuery("SELECT name FROM sqlite_master WHERE type='table'")
         .then((tables) => tables.map((row) => row['name'] as String).toList());
   }
+
+  static Future<void> deleteDatabase(String dbName) async {
+    String path = await getFilePath("$dbName.db");
+    await File(path).delete();
+  }
 }

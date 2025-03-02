@@ -102,4 +102,11 @@ class DataHelper {
     print("All Done :D");
     return temp;
   }
+
+  /// 删除该数据库
+  static Future<void> deleteDatabase(String dbName) async {
+    await DatabaseManager.deleteDatabase(dbName);
+    print("All Done :D");
+    return;
+  }
 }

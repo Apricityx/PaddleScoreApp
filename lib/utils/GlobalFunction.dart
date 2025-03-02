@@ -222,7 +222,7 @@ Future<void> insertProgress(
 }
 
 /// 输出到日志
-Future<void> printDebug(dynamic content) async {
+Future<void> printDebug(dynamic content, {int level = 0}) async {
   print(content);
   final logDirectory = Directory('log');
   final logFile = File('log/latest.log');
@@ -232,5 +232,17 @@ Future<void> printDebug(dynamic content) async {
   if (!await logFile.exists()) {
     await logFile.create(recursive: true);
   }
-  await logFile.writeAsString('${content.toString()}\n', mode: FileMode.append);
+  var timeNow = DateTime.now();
+  if (level == 0) {
+    await logFile.writeAsString('[$timeNow][INFO]${content.toString()}\n',
+        mode: FileMode.append);
+  }
+  if (level == 1) {
+    await logFile.writeAsString('[$timeNow][WARNING]${content.toString()}\n',
+        mode: FileMode.append);
+  }
+  if (level == 2) {
+    await logFile.writeAsString('[$timeNow][ERROR]${content.toString()}\n',
+        mode: FileMode.append);
+  }
 }

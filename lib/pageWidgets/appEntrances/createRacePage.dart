@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:paddle_score_app/DataHelper.dart';
 import 'package:paddle_score_app/main.dart';
 import 'package:paddle_score_app/utils/CreateRaceExcelChecker.dart';
+import 'package:paddle_score_app/utils/GlobalFunction.dart';
 import 'package:paddle_score_app/utils/SettingService.dart';
 
 import '../universalWidgets/Loading.dart';
@@ -60,7 +61,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '点击下方按钮下载最新的报名表，下载好报名表后，请将运动员的信息填写进报名表中',
+                      '点击下方按钮下载报名表，下载好报名表后，请将运动员的信息填写进报名表中',
                       style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                     ),
                     const SizedBox(height: 16),
@@ -372,26 +373,32 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                                               CrossAxisAlignment
                                                                   .start,
                                                           children: [
-                                                            Text(
-                                                              isExcelValid
-                                                                      .numberValidated
-                                                                  ? "✅ 报名表中编号无误"
-                                                                  : "⚠ 报名表中有错误的编号，这可能是因为单元格格式错误或是有多余的空格，请检查",
-                                                              style: TextStyle(
-                                                                  fontSize: 16,
-                                                                  color: isExcelValid
-                                                                          .numberValidated
-                                                                      ? Colors
-                                                                          .black87
-                                                                      : Colors
-                                                                          .red,
-                                                                  fontWeight: isExcelValid
-                                                                          .numberValidated
-                                                                      ? FontWeight
-                                                                          .normal
-                                                                      : FontWeight
-                                                                          .bold),
-                                                            ),
+                                                            /// 检查列表
+                                                            createCheckerWarning(
+                                                                "组别名字无空格",
+                                                                "组别名字中不应该包含空格，请检查",
+                                                                isExcelValid
+                                                                    .divisionNameNoIllegalChar),
+                                                            createCheckerWarning(
+                                                                "编号无重复",
+                                                                "报名表运动员编号列有重复的编号，请检查",
+                                                                isExcelValid
+                                                                    .numberNoDuplicate),
+                                                            createCheckerWarning(
+                                                                "编号无空值或非法字符",
+                                                                "报名表运动员编号列格式错误，这可能是因为有空值或有非法字符，请检查",
+                                                                isExcelValid
+                                                                    .numberNoIllegalChar),
+                                                            createCheckerWarning(
+                                                                "运动员名均以录入",
+                                                                "报名表运动员名字有空值，请检查",
+                                                                isExcelValid
+                                                                    .athleteNameNoEmpty),
+                                                            createCheckerWarning(
+                                                                "团队名均以录入",
+                                                                "报名表团队名字有空值，请检查",
+                                                                isExcelValid
+                                                                    .teamNoEmpty),
                                                             // Text(
                                                             //   isExcelValid
                                                             //       .numberValidated
@@ -450,8 +457,8 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) =>
-                                        const MyHomePage()),
-                                        (route) => false,
+                                            const MyHomePage()),
+                                    (route) => false,
                                   );
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
@@ -459,12 +466,15 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                     ),
                                   );
                                 } catch (e) {
+                                  printDebug(e, level: 2);
                                   Loading.stopLoading(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text('录入失败，请检查报名表无误后重试'),
                                     ),
                                   );
+                                  // 删除数据库
+                                  await DataHelper.deleteDatabase(raceName);
                                 }
                               }
                             : null,
@@ -478,6 +488,16 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget createCheckerWarning(String info, String warning, bool isValid) {
+    return Text(
+      isValid ? "✅ $info" : "⚠ $warning",
+      style: TextStyle(
+          fontSize: 16,
+          color: isValid ? Colors.black87 : Colors.red,
+          fontWeight: isValid ? FontWeight.normal : FontWeight.bold),
     );
   }
 }
