@@ -284,89 +284,86 @@ class _HomePageContent extends State<HomePageContent> {
                         },
                         initiallyExpanded: true,
                         children: [
-                          SizedBox(
-                            width: 650,
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                // crossAxisAlignment: CrossAxisAlignmen,
-                                children: [
-                                  /// BUG：输入框输入内容会导致整个页面重载，需要用局部刷新的方法解决
-                                  TextFormField(
-                                    controller: _raceNameController,
-                                    decoration: const InputDecoration(
-                                        labelText: '赛事名称', hintText: '请输入赛事名称'),
-                                    onChanged: (value) {
-                                      setState(() {});
-                                    },
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return '请输入赛事名称';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: ElevatedButton(
-                                      // onPressed:_pickExcelFile,
-                                      onPressed:
-                                          _raceNameController.text.isEmpty
-                                              ? null
-                                              : () => {
-                                                    // 跳转到创建赛事
-                                                    Navigator.pushNamed(
-                                                      context,
-                                                      DateTime.now().isAfter(
-                                                              DateTime(
-                                                                  2000 + 25,
-                                                                  1 + 2,
-                                                                  10))
-                                                          ? 'null'
-                                                          : '/create',
-                                                      arguments: _raceNameController
-                                                          .text, // 传递 raceName 参数
-                                                    )
-                                                  },
-                                      style: ButtonStyle(
-                                        backgroundColor:
-                                            WidgetStateProperty.all<Color>(
-                                                const Color(0xFFBBDEFB)),
-                                        // padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                                        //     EdgeInsets.symmetric(horizontal: 32.0,vertical: 16.0)
-                                        // ),
-                                        shape: WidgetStateProperty.all<
-                                                OutlinedBorder>(
-                                            RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        8.0))),
-                                        shadowColor:
-                                            WidgetStateProperty.all<Color>(
-                                                Colors.black),
-                                        elevation: WidgetStateProperty
-                                            .resolveWith<double>(
-                                                (Set<WidgetState> states) {
-                                          if (states
-                                              .contains(WidgetState.hovered)) {
-                                            return 16.0;
-                                          }
-                                          return 4.0;
-                                        }),
-                                        overlayColor:
-                                            WidgetStateProperty.all<Color>(
-                                                Colors.white),
-                                      ),
-                                      child: const Text('开始创建'),
+                          Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 50),
+                              child: Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  // crossAxisAlignment: CrossAxisAlignmen,
+                                  children: [
+                                    /// BUG：输入框输入内容会导致整个页面重载，需要用局部刷新的方法解决
+                                    TextFormField(
+                                      controller: _raceNameController,
+                                      decoration: const InputDecoration(
+                                          labelText: '赛事名称',
+                                          hintText: '请输入赛事名称'),
+                                      onChanged: (value) {
+                                        setState(() {});
+                                      },
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return '请输入赛事名称';
+                                        }
+                                        return null;
+                                      },
                                     ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                ],
-                              ),
-                            ),
-                          ),
+                                    const SizedBox(height: 20),
+                                    Align(
+                                      alignment: Alignment.center,
+                                      child: ElevatedButton(
+                                        // onPressed:_pickExcelFile,
+                                        onPressed: _raceNameController
+                                                .text.isEmpty
+                                            ? null
+                                            : () => {
+                                                  // 跳转到创建赛事
+                                                  Navigator.pushNamed(
+                                                    context,
+                                                    DateTime.now().isAfter(
+                                                            DateTime(2000 + 25,
+                                                                1 + 2, 10))
+                                                        ? 'null'
+                                                        : '/create',
+                                                    arguments: _raceNameController
+                                                        .text, // 传递 raceName 参数
+                                                  )
+                                                },
+                                        style: ButtonStyle(
+                                          backgroundColor:
+                                              WidgetStateProperty.all<Color>(
+                                                  const Color(0xFFBBDEFB)),
+                                          // padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                                          //     EdgeInsets.symmetric(horizontal: 32.0,vertical: 16.0)
+                                          // ),
+                                          shape: WidgetStateProperty.all<
+                                                  OutlinedBorder>(
+                                              RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8.0))),
+                                          shadowColor:
+                                              WidgetStateProperty.all<Color>(
+                                                  Colors.black),
+                                          elevation: WidgetStateProperty
+                                              .resolveWith<double>(
+                                                  (Set<WidgetState> states) {
+                                            if (states.contains(
+                                                WidgetState.hovered)) {
+                                              return 16.0;
+                                            }
+                                            return 4.0;
+                                          }),
+                                          overlayColor:
+                                              WidgetStateProperty.all<Color>(
+                                                  Colors.white),
+                                        ),
+                                        child: const Text('开始创建'),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                  ],
+                                ),
+                              ))
                         ]),
                   ),
                 )),

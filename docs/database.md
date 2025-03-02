@@ -156,7 +156,7 @@ flutter:
 - 赛程（1/4决赛）： schedule
 - 项目（例6000米长距离赛）： competitions
 - 长距离赛（例6000米长距离赛）： long_distance
-- 趴板划水赛（例200米趴板划水赛）： prone_paddle
+- 趴板划水赛（例200米趴板划水赛 仅青少年）： prone_paddle
 - 竞速赛（例200米竞速赛）： sprint
 - 初赛： preliminary
 - 决赛： final

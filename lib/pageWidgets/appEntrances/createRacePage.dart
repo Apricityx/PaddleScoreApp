@@ -13,6 +13,7 @@ import '../universalWidgets/Loading.dart';
 
 bool button1Pressed = false;
 bool button2Pressed = false;
+bool button3Pressed = false;
 
 class CreateRacePage extends StatefulWidget {
   const CreateRacePage({super.key});
@@ -32,16 +33,21 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
     if (SettingService.settings['isDebugMode']) {
       button1Pressed = true;
       button2Pressed = true;
+      button3Pressed = true;
     }
     final raceName = ModalRoute.of(context)!.settings.arguments as String? ??
         'No Race Name Provided';
+    TextEditingController longDistanceController = TextEditingController(text: '16');
+    TextEditingController proneDistanceController = TextEditingController(text: '16');
+    TextEditingController sprintController = TextEditingController(text: '16');
+
     return Scaffold(
       appBar: AppBar(
         title: Text('创建赛事：$raceName'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
+        child: ListView(
           children: [
             // 说明文字 居左 有标题和正文
             /// todo: 优化文字说明
@@ -187,8 +193,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                 ),
               ),
             ),
-
-            // 第三个卡片：确定
+            // 第三个卡片：更改分组人数
             Card(
               elevation: 4,
               margin: const EdgeInsets.symmetric(vertical: 8),
@@ -198,7 +203,78 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      '第三步：确定',
+                      '第三步：调整分组人数',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '输入相关人数后点击确认，默认人数为16',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                    ),
+                    const SizedBox(height: 16),
+                    /// 人数控件
+                    TextField(
+                      keyboardType: TextInputType.number,
+                      controller: longDistanceController,
+                      onChanged: (value) {
+                        /// todo
+                      },
+                      decoration: const InputDecoration(
+                        label: Text("5000m(青少年3000m)比赛分组人数"),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    TextField(
+                      keyboardType: TextInputType.number,
+                      controller: proneDistanceController,
+                      onChanged: (value) {
+                        /// todo
+                      },
+                      decoration: const InputDecoration(
+                        label: Text("200m趴板划水赛分组人数"),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    TextField(
+                      keyboardType: TextInputType.number,
+                      controller: proneDistanceController,
+                      onChanged: (value) {
+                        /// todo
+                      },
+                      decoration: const InputDecoration(
+                        label: Text("500m竞速划水赛分组人数"),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Center(
+                      child: ElevatedButton.icon(
+                        onPressed: button2Pressed
+                            ? () {
+                                setState(() {
+                                  button3Pressed = true;
+                                });
+                              }
+                            : null,
+                        icon: const Icon(Icons.check),
+                        label: const Text('确认'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // 第四个卡片：确定
+            Card(
+              elevation: 4,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '第四步：确定',
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
@@ -212,7 +288,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                     const SizedBox(height: 16),
                     Center(
                       child: ElevatedButton(
-                        onPressed: button2Pressed
+                        onPressed: button3Pressed
                             ? () async {
                                 /// 弹出弹窗让用户确认信息
                                 var isConfirmed = await showDialog<bool>(
@@ -399,16 +475,6 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                                                 "报名表团队名字有空值，请检查",
                                                                 isExcelValid
                                                                     .teamNoEmpty),
-                                                            // Text(
-                                                            //   isExcelValid
-                                                            //       .numberValidated
-                                                            //       ? "报名表中有错误的编号，这可能是因为单元格为字符格式或是有多余的空格，请检查"
-                                                            //       : "✅报名表中编号无误",
-                                                            //   style: const TextStyle(
-                                                            //       fontSize: 16,
-                                                            //       color: Colors
-                                                            //           .black87),
-                                                            // ),
                                                           ],
                                                         )),
                                                       ],
