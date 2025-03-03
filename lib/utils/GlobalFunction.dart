@@ -31,6 +31,32 @@ Future<List<String>> getDivisions(String dbName) async {
   return result;
 }
 
+enum GroupType {
+  longDistance,
+  prone,
+  sprint,
+}
+
+/// 获取组别分组人数
+Future<int> getGroupAthleteCount(String dbName, GroupType p) async {
+  Database db = await DatabaseManager.getDatabase(dbName);
+  String groupDbQueryName = '';
+  if (p == GroupType.longDistance) {
+    groupDbQueryName = 'longDistanceGroupAthleteCount';
+  } else if (p == GroupType.prone) {
+    groupDbQueryName = 'proneGroupAthleteCount';
+  } else if (p == GroupType.sprint) {
+    groupDbQueryName = 'sprintGroupAthleteCount';
+  } else {
+    throw "获取组别分组人数时传入错误的组别类型";
+  }
+  List<Map<String, dynamic>> result = await db.query('progress',
+      columns: ['progress_value'],
+      where: 'progress_name = ?',
+      whereArgs: [groupDbQueryName]);
+  return result.first['progress_value'];
+}
+
 enum CType { pronePaddle, sprint }
 
 String cTypeTranslate(CType c) {

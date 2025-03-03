@@ -60,12 +60,13 @@ class CreateRaceExcelChecker {
       }
     }
 
-    /// 3. 组别中不能有空格
+    /// 3. 组别中不能有空格或以数字开头
     result.divisionNameNoIllegalChar = true;
     for (var i = 1; i < rows.length; i++) {
       if (rows[i][0]?.value == null ||
-          rows[i][0]!.value.toString().contains(' ')) {
-        printDebug('组别中有空格', level: 1);
+          rows[i][0]!.value.toString().contains(' ') ||
+          rows[i][0]!.value.toString().startsWith(RegExp(r'^\d'))) {
+        printDebug('组别中有空格或以数字开头', level: 1);
         result.divisionNameNoIllegalChar = false;
       }
     }

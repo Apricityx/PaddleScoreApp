@@ -13,12 +13,26 @@ class DataHelper {
   /// 传入报名表的Excel文件，初始化数据库，这是所有操作的第一步
   /// [dbName] 数据库名
   /// [xlsxFileBytes] 文件二进制数据
-  static Future<void> loadExcelFileToAthleteDatabase(
-      String dbName, List<int> xlsxFileBytes) async {
+  /// [groupsAthleteCount] 每组运动员数
+  static Future<void> loadExcelFileToAthleteDatabase(String dbName,
+      List<int> xlsxFileBytes, List<int> groupsAthleteCount) async {
     await ExcelAnalyzer.initAthlete(dbName, xlsxFileBytes);
     await DatabaseManager.getDatabase(dbName).then((db) async {
       await db.update('progress', {'progress_value': 1},
           where: 'progress_name = ?', whereArgs: ['athlete_imported']);
+      printDebug("录入分组人数");
+      await db.insert('progress', {
+        'progress_name': 'longDistanceGroupAthleteCount',
+        'progress_value': groupsAthleteCount[0]
+      });
+      await db.insert('progress', {
+        'progress_name': 'proneGroupAthleteCount',
+        'progress_value': groupsAthleteCount[1]
+      });
+      await db.insert('progress', {
+        'progress_name': 'sprintGroupAthleteCount',
+        'progress_value': groupsAthleteCount[2]
+      });
     });
     print("All Done :D");
     return;
@@ -53,7 +67,8 @@ class DataHelper {
       print("All Done :D");
     } catch (e) {
       print("出现错误: $e 数据库已恢复");
-      File(await getFilePath("$dbName.db")).writeAsBytesSync(databaseFileBinary);
+      File(await getFilePath("$dbName.db"))
+          .writeAsBytesSync(databaseFileBinary);
       rethrow;
     }
 

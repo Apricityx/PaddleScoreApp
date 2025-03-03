@@ -35,6 +35,7 @@ class DatabaseManager {
           'progress_value': 0,
           'description': '长距离比赛成绩是否导入，导入长距离比赛成绩后变为1'
         });
+
       },
       version: 1,
     );

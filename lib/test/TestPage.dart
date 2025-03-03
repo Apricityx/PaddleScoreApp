@@ -37,7 +37,10 @@ class TestPage extends StatelessWidget {
               leading: Icon(Icons.generating_tokens),
               title: Text("跳转到新页面"),
               onTap: () async {
-                Navigator.pushNamed(context,"/create",);
+                Navigator.pushNamed(
+                  context,
+                  "/create",
+                );
                 // Navigator.pushNamed(context,"/settings");
               }),
           TestUnit(
@@ -48,7 +51,7 @@ class TestPage extends StatelessWidget {
                 File xlsxFile = File("$testFilePath/参赛信息-_汉丰湖.xlsx");
 
                 await DataHelper.loadExcelFileToAthleteDatabase(
-                    dbName, xlsxFile.readAsBytesSync());
+                    dbName, xlsxFile.readAsBytesSync(), [16, 16, 16]);
               }),
           TestUnit(
               text: "下载长距离空成绩表",
