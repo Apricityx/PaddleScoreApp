@@ -29,8 +29,8 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
   List<String> divisions = [];
   int athleteNum = 0;
   ValidExcelResult isExcelValid = ValidExcelResult();
-  TextEditingController longDistanceController =
-      TextEditingController(text: '16');
+  // TextEditingController longDistanceController =
+  //     TextEditingController(text: '16');
   TextEditingController proneDistanceController =
       TextEditingController(text: '16');
   TextEditingController sprintController = TextEditingController(text: '16');
@@ -219,13 +219,13 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                     const SizedBox(height: 16),
 
                     /// 人数控件
-                    TextField(
-                      keyboardType: TextInputType.number,
-                      controller: longDistanceController,
-                      decoration: const InputDecoration(
-                        label: Text("5000m(青少年3000m)比赛分组人数"),
-                      ),
-                    ),
+                    // TextField(
+                    //   keyboardType: TextInputType.number,
+                    //   controller: longDistanceController,
+                    //   decoration: const InputDecoration(
+                    //     label: Text("5000m(青少年3000m)比赛分组人数"),
+                    //   ),
+                    // ),
                     SizedBox(height: 16),
                     TextField(
                       keyboardType: TextInputType.number,
@@ -296,7 +296,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                       context: context,
                                       builder: (BuildContext context) {
                                         return AlertDialog(
-                                          title: const Text('确认信息'),
+                                          title: const Text(' 确认信息'),
                                           content: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             crossAxisAlignment:
@@ -356,7 +356,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                                                 width: 8),
                                                             Expanded(
                                                               child: Text(
-                                                                "赛事名称：$raceName\n报名表路径：$filePath\n参赛总人数：$athleteNum人",
+                                                                "赛事名称：$raceName\n报名表路径：$filePath\n参赛总人数：$athleteNum人\n趴板项目每组人数：${proneDistanceController.text}人\n竞速项目每组人数：${sprintController.text}人",
                                                                 style: const TextStyle(
                                                                     fontSize:
                                                                         16,
@@ -523,7 +523,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                           .loadExcelFileToAthleteDatabase(
                                               raceName,
                                               xlsxFile.readAsBytesSync(), [
-                                        int.parse(longDistanceController.text),
+                                        // int.parse(longDistanceController.text),
                                         int.parse(proneDistanceController.text),
                                         int.parse(sprintController.text)
                                       ]);
@@ -535,7 +535,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                         ),
                                       );
                                       printDebug(
-                                          "分组情况为 ${await getGroupAthleteCount(raceName, GroupType.longDistance)} ${await getGroupAthleteCount(raceName, GroupType.prone)} ${await getGroupAthleteCount(raceName, GroupType.sprint)}");
+                                          "分组情况为 ${await getAthleteCountPerGroup(raceName, CType.pronePaddle)} ${await getAthleteCountPerGroup(raceName, CType.sprint)}");
 
                                       /// 返回首页并刷新
                                       Navigator.pushAndRemoveUntil(
@@ -562,6 +562,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                       );
                                       // 删除数据库
                                       await DataHelper.deleteDatabase(raceName);
+                                      rethrow;
                                     }
                                   }
                                 : null,

@@ -16,24 +16,28 @@ class DataHelper {
   /// [groupsAthleteCount] 每组运动员数
   static Future<void> loadExcelFileToAthleteDatabase(String dbName,
       List<int> xlsxFileBytes, List<int> groupsAthleteCount) async {
-    await ExcelAnalyzer.initAthlete(dbName, xlsxFileBytes);
-    await DatabaseManager.getDatabase(dbName).then((db) async {
-      await db.update('progress', {'progress_value': 1},
-          where: 'progress_name = ?', whereArgs: ['athlete_imported']);
-      printDebug("录入分组人数");
-      await db.insert('progress', {
-        'progress_name': 'longDistanceGroupAthleteCount',
-        'progress_value': groupsAthleteCount[0]
-      });
-      await db.insert('progress', {
-        'progress_name': 'proneGroupAthleteCount',
-        'progress_value': groupsAthleteCount[1]
-      });
-      await db.insert('progress', {
-        'progress_name': 'sprintGroupAthleteCount',
-        'progress_value': groupsAthleteCount[2]
-      });
+    printDebug("录入分组人数");
+    Database db = await DatabaseManager.getDatabase(dbName);
+    /// 录入每组人数
+    await db.insert('progress', {
+      'progress_name': 'proneGroupAthleteCount',
+      'progress_value': groupsAthleteCount[0],
+      'description': '趴板每组的人数'
     });
+
+    await db.insert('progress', {
+      'progress_name': 'sprintGroupAthleteCount',
+      'progress_value': groupsAthleteCount[1],
+      'description': '竞速每组的人数'
+    });
+    printDebug(
+        "已录入每组人数，分别为：${groupsAthleteCount[0]}, ${groupsAthleteCount[1]}");
+
+    /// 初始化运动员信息表
+    await ExcelAnalyzer.initAthlete(dbName, xlsxFileBytes);
+
+    await db.update('progress', {'progress_value': 1},
+        where: 'progress_name = ?', whereArgs: ['athlete_imported']);
     print("All Done :D");
     return;
   }
@@ -80,6 +84,7 @@ class DataHelper {
   /// [c] 比赛进度
   /// [s] 项目
   /// [dbName] 数据库名
+  /// [groupAthleteCount] 长距离组别人数
   static Future<List<int>?> generateGenericExcel(
       String division, CType c, SType s, String dbName) async {
     var temp = ExcelGenerator.generic(division, c, s, dbName);

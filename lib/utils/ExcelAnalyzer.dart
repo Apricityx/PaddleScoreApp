@@ -50,26 +50,40 @@ class ExcelAnalyzer {
           db.update('athletes', {"long_distance_score": rankToScore(i + 1)},
               where: "id = ?", whereArgs: [scores.keys.toList()[i]]);
         }
-        var processedGroup = _getGroup(scores);
-        // processedGroup的key为id，value为组别，将组别录入数据库1
-        print("$division的processedGroup为$processedGroup");
-        var tables = await DatabaseManager.getTableNames(db);
-        // 更新所有初赛的group
-        var tablesName = [
-          '${division}_初赛_趴板',
-          '${division}_初赛_竞速',
-        ];
-        for (var tableName in tablesName) {
-          if (!tables.contains(tableName)) {
-            continue;
-            // 跳过非青少年的组别
+
+        /// 分别录入两场比赛的Group
+        List<String> competitions = ['趴板', '竞速'];
+        for (String competition in competitions) {
+          Map<String, int> processedGroup = await _getSnackGroup(
+              scores.keys.toList().map(int.parse).toList(),
+              competition,
+              dbName);
+          for (var athlete in processedGroup.keys) {
+            db.update(
+                "${division}_初赛_$competition", {"_group": processedGroup[athlete]},
+                where: "id = ?", whereArgs: [athlete]);
           }
-          print("更新$tableName");
-          processedGroup.forEach((key, value) {
-            db.update(tableName, {"_group": value},
-                where: "id = ?", whereArgs: [key]);
-          });
+          /// todo 将蛇形分组后的数据录入数据库
         }
+        // // processedGroup的key为id，value为组别，将组别录入数据库1
+        // print("$division的processedGroup为$processedGroup");
+        // var tables = await DatabaseManager.getTableNames(db);
+        // // 更新所有初赛的group
+        // var tablesName = [
+        //   '${division}_初赛_趴板',
+        //   '${division}_初赛_竞速',
+        // ];
+        // for (var tableName in tablesName) {
+        //   if (!tables.contains(tableName)) {
+        //     continue;
+        //     // 跳过非青少年的组别
+        //   }
+        //   print("更新$tableName");
+        //   processedGroup.forEach((key, value) {
+        //     db.update(tableName, {"_group": value},
+        //         where: "id = ?", whereArgs: [key]);
+        //   });
+        // }
       }
     }
     print("Import finished, sort starting...");
@@ -160,7 +174,6 @@ class ExcelAnalyzer {
         continue;
       }
       // 如果id中含有非数字则跳过
-      // todo 检查id是否合法
       if (row[1]?.value == null ||
           !RegExp(r'^\d+$').hasMatch(row[1]!.value.toString())) {
         print("id不合法，跳过");
@@ -186,7 +199,7 @@ class ExcelAnalyzer {
         'long_distant_rank': '0'
       });
     }
-    await _initScoreTable(db);
+    await _initScoreTable(dbName);
   }
 
   /// 将时间转换为最小单位
@@ -218,39 +231,71 @@ class ExcelAnalyzer {
     }
   }
 
-  static Map<String, int> _getGroup(Map<String, int> sortedScores) {
-    // 传入按时间递增排序的成绩表，越小越好
+  static Future<Map<String, int>> _getSnackGroup(
+      List<int> sortedScores, String competition, String dbName) async {
+    CType c = competition == '趴板' ? CType.pronePaddle : CType.sprint;
+    int athleteCountPerGroup = await getAthleteCountPerGroup(dbName, c);
+
+    /// 传入按时间递增排序的成绩表，越小越好
     // print("对$sortedScores进行分组");
     // 蛇形分组
     int personNum = sortedScores.length;
-    // 每组最多16人，尽量平均分组，不足16人的组别不分组
-    // 组数只能为1,2,4,8,16
-    int groupNum = getGroupNum(personNum);
-    print("$personNum应该分为$groupNum组");
-    // 每组的人数
-    // print("每组$groupSize人");
+
+    /// 每组最多$athleteCountPerGroup人，尽量平均分组，不足$athleteCountPerGroup人的组别不分组
+    /// 组数只能为1,2,4,8,16
+    int groupNum = getGroupNum(personNum, athleteCountPerGroup);
+    print("$personNum应该分为$groupNum组，每组$athleteCountPerGroup人");
+
+    /// 上面准备工作已完成，现在有的资源为：
+    /// $athleteCountPerGroup每组人数
+    /// $groupNum组数
+    /// $sortedScores按时间递增排序的运动员id
+
+    /// 返回一个Map，key为运动员id，value为组别
     Map<String, int> result = {};
-    // print(sortedScores.keys.toList());
-    for (int i = 1; i <= groupNum; i++) {
-      int a = i * 2 - 1;
-      int b = groupNum * 2 - a;
-      int baseNum = (i - 1);
-      bool flag = true;
-      while (baseNum < personNum) {
-        // print(baseNum);
-        result[sortedScores.keys.toList()[baseNum]] = i;
-        if (flag) {
-          //sortedScores的第baseNum个元素即为第baseNum+1名
-          // flag为true时baseNum+b
-          baseNum += b;
-          flag = !flag;
-        } else {
-          // flag为false时baseNum+a
-          baseNum += a;
-          flag = !flag;
-        }
+
+    /// 计算每组最终人数（向上取整）
+    int personNumPerGroup = (personNum / groupNum).ceil();
+    int counter = 1;
+    bool isSpecial = true;
+
+    /// 认为第一轮为special
+    for (var score in sortedScores) {
+      if (isSpecial) {
+        result[score.toString()] = counter;
+      } else {
+        result[score.toString()] = groupNum - counter + 1;
       }
+      if (counter % groupNum == 0) {
+        /// 拐弯
+        printDebug("为$score的时候拐弯");
+        isSpecial = !isSpecial;
+        counter = 0;
+      }
+      counter++;
     }
+
+    // print(sortedScores.keys.toList());
+    // for (int i = 1; i <= groupNum; i++) {
+    //   int a = i * 2 - 1;
+    //   int b = groupNum * 2 - a;
+    //   int baseNum = (i - 1);
+    //   bool flag = true;
+    //   while (baseNum < personNum) {
+    //     // print(baseNum);
+    //     result[sortedScores.keys.toList()[baseNum]] = i;
+    //     if (flag) {
+    //       //sortedScores的第baseNum个元素即为第baseNum+1名
+    //       // flag为true时baseNum+b
+    //       baseNum += b;
+    //       flag = !flag;
+    //     } else {
+    //       // flag为false时baseNum+a
+    //       baseNum += a;
+    //       flag = !flag;
+    //     }
+    //   }
+    // }
     print(result);
     return result;
   }
@@ -258,7 +303,8 @@ class ExcelAnalyzer {
   /// 由以下实体的排列组合生成表
   /// 1. 组别 2. 比赛进度（预赛、决赛）3. 项目（长距离、趴板、竞速）4. 性别
   /// 确定生成函数
-  static Future<void> _initScoreTable(Database db) async {
+  static Future<void> _initScoreTable(String dbName) async {
+    Database db = await DatabaseManager.getDatabase(dbName);
     // 查询athlete表中有哪些division
     var divisionsRaw = await db.rawQuery('''
     SELECT DISTINCT division FROM athletes
@@ -271,7 +317,7 @@ class ExcelAnalyzer {
     for (var competition in competitions) {
       for (var division in divisions) {
         // 如果分组为非青少年（没有U），且比赛为趴板，则跳过
-        /// 判断哪些是青少年组
+        /// 通过是否有U判断哪些是青少年组
         if (!RegExp(r'U\d+').hasMatch(division) && competition == '趴板') {
           continue;
         }
@@ -288,23 +334,32 @@ class ExcelAnalyzer {
         }
         print("比赛项目：$division $competition 共有$athleteCount名运动员");
         // 生成比赛表
-        if (athleteCount <= 16) {
-          await _generateScoreTable(db, athletes, division, "决赛", competition);
-        } else if (athleteCount <= 64) {
-          await _generateScoreTable(db, athletes, division, "初赛", competition);
-          await _generateScoreTable(db, athletes, division, "决赛", competition);
-        } else if (athleteCount <= 128) {
-          await _generateScoreTable(db, athletes, division, "初赛", competition);
+        CType c = competition == '趴板' ? CType.pronePaddle : CType.sprint;
+        int athleteCountPerGroup = await getAthleteCountPerGroup(dbName, c);
+        if (athleteCount <= athleteCountPerGroup) {
           await _generateScoreTable(
-              db, athletes, division, "二分之一决赛", competition);
-          await _generateScoreTable(db, athletes, division, "决赛", competition);
-        } else if (athleteCount <= 256) {
-          await _generateScoreTable(db, athletes, division, "初赛", competition);
+              dbName, athletes, division, "决赛", competition);
+        } else if (athleteCount <= athleteCountPerGroup * 4) {
           await _generateScoreTable(
-              db, athletes, division, "四分之一决赛", competition);
+              dbName, athletes, division, "初赛", competition);
           await _generateScoreTable(
-              db, athletes, division, "二分之一决赛", competition);
-          await _generateScoreTable(db, athletes, division, "决赛", competition);
+              dbName, athletes, division, "决赛", competition);
+        } else if (athleteCount <= athleteCountPerGroup * 8) {
+          await _generateScoreTable(
+              dbName, athletes, division, "初赛", competition);
+          await _generateScoreTable(
+              dbName, athletes, division, "二分之一决赛", competition);
+          await _generateScoreTable(
+              dbName, athletes, division, "决赛", competition);
+        } else if (athleteCount <= athleteCountPerGroup * 16) {
+          await _generateScoreTable(
+              dbName, athletes, division, "初赛", competition);
+          await _generateScoreTable(
+              dbName, athletes, division, "四分之一决赛", competition);
+          await _generateScoreTable(
+              dbName, athletes, division, "二分之一决赛", competition);
+          await _generateScoreTable(
+              dbName, athletes, division, "决赛", competition);
         } else {
           throw Exception("运动员数量超过256，无法生成比赛表");
           // print("运动员数量超过256，无法生成比赛表");
@@ -314,7 +369,7 @@ class ExcelAnalyzer {
   }
 
   static Future<void> _generateScoreTable(
-      Database db,
+      String dbName,
       List<Map<String, Object?>> athletes,
       String division,
       String schedule,
@@ -322,6 +377,8 @@ class ExcelAnalyzer {
     // // 完善progress表
     // await db.insert('progress',
     //     {'progress_name': '${division}_${schedule}_${competition}_imported'});
+    Database db = await DatabaseManager.getDatabase(dbName);
+
     /// 创建比赛表
     await db.execute('''
         CREATE TABLE '${division}_${schedule}_$competition' (
@@ -338,15 +395,19 @@ class ExcelAnalyzer {
       'progress_value': 0,
       'description': '运动员信息是否导入，导入后变为1'
     });
+
     await db.insert('progress', {
       'progress_name': '${division}_${schedule}_${competition}_downloaded',
       'progress_value': 0,
       'description': '运动员信息是否下载，下载后变为1'
     });
-    // 生成比赛表
-    // 如果是非初赛，则不插入信息
-    // 如果是决赛且运动员数量不足16人，则直接确定分组，如果是初赛则留到后边再分组
-    if (schedule == "决赛" && athletes.length <= 16) {
+
+    /// 生成比赛表
+    /// 如果是非初赛，则不插入信息
+    /// 如果是决赛且运动员数量不足$athleteCountPerGroup人，则直接确定分组，如果是初赛则留到后边再分组
+    CType c = competition == '趴板' ? CType.pronePaddle : CType.sprint;
+    int athleteCountPerGroup = await getAthleteCountPerGroup(dbName, c);
+    if (schedule == "决赛" && athletes.length <= athleteCountPerGroup) {
       for (var athlete in athletes) {
         await db.insert(
           '${division}_${schedule}_$competition',
@@ -359,6 +420,7 @@ class ExcelAnalyzer {
         );
       }
     }
+
     // 将初赛的运动员插入到初赛表中，等待分组
     if (schedule == "初赛") {
       for (var athlete in athletes) {
@@ -372,30 +434,11 @@ class ExcelAnalyzer {
         );
       }
     }
-    // if (schedule == "初赛" || (schedule == "决赛" && athletes.length <= 16)) {
-    //   // 生成分组
-    //   var group = <String, int>{};
-    //   for (var i = 0; i < athletes.length; i++) {
-    //     group[athletes[i]['id'].toString()] = i ~/ 16;
-    //   }
-    //   // 插入信息
-    //   for (var athlete in athletes) {
-    //     await db.insert(
-    //       '${division}_${schedule}_$competition',
-    //       {
-    //         'id': athlete['id'],
-    //         'name': athlete['name'],
-    //         'time': '0',
-    //         '_group': group[athlete['id'].toString()],
-    //       },
-    //     );
-    //   }
-    // }
     return;
   }
 
-  static Future<String> _getNextTableName(
-      String dbName, String division, CType c, SType s) async {
+  static Future<String> _getNextTableName(String dbName, String division,
+      CType c, SType s, int athleteCountPerGroup) async {
     Database db = await DatabaseManager.getDatabase(dbName);
     if (s == SType.firstRound) {
       String tableName =
@@ -405,13 +448,13 @@ class ExcelAnalyzer {
       if (athletesNum == 0) {
         throw Exception("致命错误：在进行初赛成绩导入时没有运动员");
       }
-      if (athletesNum <= 16) {
+      if (athletesNum <= athleteCountPerGroup) {
         throw Exception("致命错误：决赛无需获取下一场比赛表名");
-      } else if (athletesNum <= 64) {
+      } else if (athletesNum <= athleteCountPerGroup * 4) {
         return "${division}_决赛_${cTypeTranslate(c)}";
-      } else if (athletesNum <= 128) {
+      } else if (athletesNum <= athleteCountPerGroup * 8) {
         return "${division}_二分之一决赛_${cTypeTranslate(c)}";
-      } else if (athletesNum <= 256) {
+      } else if (athletesNum <= athleteCountPerGroup * 16) {
         return "${division}_四分之一决赛_${cTypeTranslate(c)}";
       }
     } else {
@@ -426,15 +469,15 @@ class ExcelAnalyzer {
     throw Exception("致命错误：无法获取下一场比赛表名");
   }
 
-  static int _getPromotionAthleteNum(int athleteNum) {
-    if (athleteNum <= 16) {
+  static int _getPromotionAthleteNum(int athleteNum, int athleteCountPerGroup) {
+    if (athleteNum <= athleteCountPerGroup) {
       throw Exception("决赛无需晋级");
-    } else if (athleteNum <= 64) {
-      return 16;
-    } else if (athleteNum <= 128) {
-      return 64;
-    } else if (athleteNum <= 256) {
-      return 128;
+    } else if (athleteNum <= athleteCountPerGroup * 4) {
+      return athleteCountPerGroup;
+    } else if (athleteNum <= athleteCountPerGroup * 8) {
+      return athleteCountPerGroup * 4;
+    } else if (athleteNum <= athleteCountPerGroup * 16) {
+      return athleteCountPerGroup * 8;
     } else {
       throw Exception("运动员数量超过256，无法获取晋级人数");
     }
@@ -481,7 +524,8 @@ class ExcelAnalyzer {
       } else {
         matchType = column[0];
       }
-      // 若为决赛则直接录入
+
+      /// 若为决赛则直接录入
       if (s == SType.finals) {
         scores = Map.fromEntries(scores.entries.toList()
           ..sort((a, b) => a.value.compareTo(b.value)));
@@ -506,19 +550,25 @@ class ExcelAnalyzer {
         scores = Map.fromEntries(scores.entries.toList()
           ..sort((a, b) => a.value.compareTo(b.value)));
         var sortedAthletes = scores.keys.toList();
-        int promotionNum = _getPromotionAthleteNum(athletesNum);
+        int athleteCountPerGroup = await getAthleteCountPerGroup(dbName, c);
+        int promotionNum =
+            _getPromotionAthleteNum(athletesNum, athleteCountPerGroup);
         print(
             "比赛${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}的晋级人数为：$promotionNum");
         print(promotionNum);
         print(sortedAthletes);
         print(tableName);
         // 处理晋级的运动员
-        for (int i = 0; i < promotionNum / getGroupNum(athletesNum); i++) {
+        for (int i = 0;
+            i < promotionNum / getGroupNum(athletesNum, athleteCountPerGroup);
+            i++) {
           // 将该运动员添加到promotionScore中
           promotionScore[sortedAthletes[i]] = i;
         }
         // 处理未晋级运动员
-        for (int i = (promotionNum / getGroupNum(athletesNum)).ceil();
+        for (int i =
+                (promotionNum / getGroupNum(athletesNum, athleteCountPerGroup))
+                    .ceil();
             i < scores.length;
             i++) {
           // 如果初赛未参赛则分数为0，晋级后，后续比赛中若出现未参赛则按最后一名处理
@@ -535,11 +585,16 @@ class ExcelAnalyzer {
         }
       }
     }
-    // 处理晋级的运动员p2
-    print(promotionScore);
-    var groups = _getGroup(promotionScore);
+
+    /// 处理晋级后的运动员，将晋级后的运动员录入到下一场比赛表中
+    printDebug("正在处理晋级的运动员：$promotionScore");
+    String competition = cTypeTranslate(c);
+    var groups = await _getSnackGroup(
+        promotionScore.keys.map(int.parse).toList(), competition, dbName);
     print(groups);
-    var targetTable = await _getNextTableName(dbName, division, c, s);
+    int athleteCountPerGroup = await getAthleteCountPerGroup(dbName, c);
+    var targetTable =
+        await _getNextTableName(dbName, division, c, s, athleteCountPerGroup);
     print("将晋级运动员录入到$targetTable中");
     for (var athleteID in groups.keys) {
       // 获取名字

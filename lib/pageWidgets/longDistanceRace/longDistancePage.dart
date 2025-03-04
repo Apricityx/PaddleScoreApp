@@ -152,7 +152,8 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                                   await FilePicker.platform
                                                       .saveFile(
                                                 dialogTitle: '保存长距离登记表',
-                                                fileName: '长距离成绩登记表.xlsx',
+                                                fileName:
+                                                    '长距离成绩登记表 - ${widget.raceEventName}.xlsx',
                                               );
                                               if (filePath == null) {
                                                 Loading.stopLoading(context);

@@ -31,21 +31,19 @@ Future<List<String>> getDivisions(String dbName) async {
   return result;
 }
 
-enum GroupType {
-  longDistance,
-  prone,
-  sprint,
-}
+// enum GroupType {
+//   longDistance,
+//   prone,
+//   sprint,
+// }
 
 /// 获取组别分组人数
-Future<int> getGroupAthleteCount(String dbName, GroupType p) async {
+Future<int> getAthleteCountPerGroup(String dbName, CType c) async {
   Database db = await DatabaseManager.getDatabase(dbName);
   String groupDbQueryName = '';
-  if (p == GroupType.longDistance) {
-    groupDbQueryName = 'longDistanceGroupAthleteCount';
-  } else if (p == GroupType.prone) {
+  if (c == CType.pronePaddle) {
     groupDbQueryName = 'proneGroupAthleteCount';
-  } else if (p == GroupType.sprint) {
+  } else if (c == CType.sprint) {
     groupDbQueryName = 'sprintGroupAthleteCount';
   } else {
     throw "获取组别分组人数时传入错误的组别类型";
@@ -130,8 +128,8 @@ String wTypeTranslate(WType w) {
 /// 这个地方是一个线头，未来可以实现让用户自定义黑名单
 const List<String> divisionBlackList = ['仅团体', '接力赛', '龙板'];
 
-int getGroupNum(int personNum) {
-  var groupNum = (personNum / 16).ceil();
+int getGroupNum(int personNum, int athleteCountPerGroup) {
+  var groupNum = (personNum / athleteCountPerGroup).ceil();
   while (groupNum != 1 &&
       groupNum != 2 &&
       groupNum != 4 &&

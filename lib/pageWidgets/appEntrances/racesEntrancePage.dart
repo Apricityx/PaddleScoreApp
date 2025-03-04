@@ -13,13 +13,13 @@ import 'package:provider/provider.dart';
 import '../longDistanceRace/longDistancePage.dart';
 import '../shortDistanceRace/shortDistancePage.dart';
 
-enum RaceType {
-  longRace,
-  shortRace1,
-  shortRace2,
-  teamRace,
-  personalScore,
-}
+// enum RaceType {
+//   longRace,
+//   shortRace1,
+//   shortRace2,
+//   teamRace,
+//   personalScore,
+// }
 
 class RacePage extends StatefulWidget {
   final String raceName;

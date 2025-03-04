@@ -87,19 +87,32 @@ class _SprintRacePageState extends State<ShortDistancePage> {
   }
 
   /// 用于获取比赛的场数
-  /// 比赛场数无关具体是哪一种比赛
   Future<List<String>> getRaceProcess(String division) async {
     int athleteCount =
         await getAthleteCountByDivision(widget.raceEventName, division);
     // totalAccount = athleteCount;
-    if (athleteCount <= 16) {
-      // raceAccount = 1;
+    /// 获取比赛类别 趴板 or 竞速
+    CType c;
+    if (widget.raceBar.contains('趴板')) {
+      c = CType.pronePaddle;
+    } else {
+      c = CType.sprint;
+    }
 
+    /// 查询该比赛类别的分组人数
+    int athleteCountPerGroup =
+        await getAthleteCountPerGroup(widget.raceEventName, c);
+    printDebug("$c分组人数:$athleteCountPerGroup");
+
+    if (athleteCount <= athleteCountPerGroup) {
+      // raceAccount = 1;
       return ["决赛"];
-    } else if (athleteCount > 16 && athleteCount <= 64) {
+    } else if (athleteCount > athleteCountPerGroup &&
+        athleteCount <= athleteCountPerGroup * 4) {
       // raceAccount = 2;
       return ["初赛", "决赛"];
-    } else if (athleteCount > 64 && athleteCount <= 128) {
+    } else if (athleteCount > athleteCountPerGroup * 4 &&
+        athleteCount <= athleteCountPerGroup * 8) {
       // raceAccount = 3;
       return ["初赛", "二分之一决赛", "决赛"];
     } else {

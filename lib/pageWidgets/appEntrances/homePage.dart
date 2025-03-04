@@ -317,7 +317,7 @@ class _HomePageContent extends State<HomePageContent> {
                                             ? null
                                             : () => {
                                                   // 跳转到创建赛事
-                                                  Navigator.pushNamed(
+                                                  Navigator.pushReplacementNamed(
                                                     context,
                                                     DateTime.now().isAfter(
                                                             DateTime(2000 + 25,
@@ -394,7 +394,7 @@ class _HomePageContent extends State<HomePageContent> {
     try {
       fileName = fileNames[count].substring(0, fileNames[count].length - 3);
     } catch (e) {
-      printDebug("请求的index不存在，返回尚未创建");
+      // printDebug("请求的index不存在，返回尚未创建");
       fileName = '尚未创建';
     }
     return fileName;

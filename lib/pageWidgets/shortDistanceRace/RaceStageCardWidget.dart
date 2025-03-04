@@ -103,12 +103,15 @@ class _RaceStageCardState extends State<RaceStageCard> {
                                       String text =
                                           "正在生成${widget.division}${widget.stageName}分组名单,请耐心等待...";
                                       Loading.startLoading(text, context);
+
+                                      /// DataHelper
                                       List<int>? excelFileBytes =
                                           await DataHelper.generateGenericExcel(
                                               widget.division,
                                               raceType,
                                               stageType,
-                                              widget.dbName);
+                                              widget.dbName
+                                          );
                                       if (excelFileBytes == null) {
                                         throw Exception("生成Excel失败");
                                       }
@@ -127,7 +130,8 @@ class _RaceStageCardState extends State<RaceStageCard> {
                                         File file = File(filePath);
                                         await file.writeAsBytes(excelFileBytes);
                                         // print("文件已保存到: $filePath");
-                                        print("将${widget.division}_${widget.stageName}_${widget.raceName}_downloaded设置为T");
+                                        print(
+                                            "将${widget.division}_${widget.stageName}_${widget.raceName}_downloaded设置为T");
                                         await setProgress(
                                             widget.dbName,
                                             "${widget.division}_${widget.stageName}_${widget.raceName}_downloaded",
@@ -145,6 +149,7 @@ class _RaceStageCardState extends State<RaceStageCard> {
                                           context,
                                           "导入失败！可能是上一步成绩导入时表格出现了问题，此问题可能无法修复，请联系开发者",
                                           e.toString());
+                                      rethrow;
                                     }
                                   },
                         style: ButtonStyle(
@@ -300,6 +305,7 @@ class DataState {
       {required this.prevImported,
       required this.currImported,
       required this.currDownloaded});
+
   @override
   String toString() {
     return "prevImported: $prevImported, currImported: $currImported, currDownloaded: $currDownloaded";

@@ -10,23 +10,30 @@ import 'GlobalFunction.dart';
 class ExcelGenerator {
   static Future<List<int>?> generic(
       String division, CType c, SType s, String dbName) async {
+    /// 查询该比赛类别的分组人数
+    int athleteCountPerGroup = await getAthleteCountPerGroup(dbName, c);
+    printDebug("$c分组人数:$athleteCountPerGroup");
+
     print('生成$division${cTypeTranslate(c)}${sTypeTranslate(s)}的Excel');
     var excel = Excel.createExcel();
     var tableName = "${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}";
     print('tableName: $tableName');
     Database db = await DatabaseManager.getDatabase(dbName);
     var a = await db.query("'$tableName'", columns: ['id']);
-    var athletesNum = a.length;
+    int athletesNum = a.length;
     // 生成Excel
-    int groupNum = getGroupNum(athletesNum);
+    int groupNum = getGroupNum(athletesNum, athleteCountPerGroup);
     if (groupNum == 0) {
-      throw Exception("该比赛尚未进行！");
+      throw Exception(
+          "该比赛尚未进行！抛出该错误的原因是运动员数量返回为0，请检查该场比赛$division${cTypeTranslate(c)}${sTypeTranslate(s)}是否已经录入数据！");
     }
+    // !!!todo!!!
     for (var i = 0; i < groupNum; i++) {
       // 查询_group == i的运动员
       print('正在录入第${i + 1}组');
       var athletes = await db.rawQuery(
           'SELECT $tableName.name,$tableName.id, $tableName._group, "长距离比赛".long_distant_rank FROM $tableName LEFT JOIN "长距离比赛" ON "长距离比赛".id = $tableName.id WHERE $tableName._group = ${i + 1}');
+      print('SELECT $tableName.name,$tableName.id, $tableName._group, "长距离比赛".long_distant_rank FROM $tableName LEFT JOIN "长距离比赛" ON "长距离比赛".id = $tableName.id WHERE $tableName._group = ${i + 1}');
       if (athletes.isEmpty) {
         throw Exception("未获取到运动员！$tableName的上一场比赛可能尚未录入数据！");
       }
@@ -117,8 +124,21 @@ class ExcelGenerator {
     // 生成Excel，生成n个sheet，每一个sheet代表一个组别
     // 生成表头
     var excel = Excel.createExcel();
-    List<String> headers = ['编号', '姓名', '代表队', '成绩（按照xxxxxx的格式填写,代表xx:xx:xx）', '备注'];
-    List<String> overviewHeaders = ['编号', '姓名', '代表队', '成绩(按照xxxxxx的格式填写,代表xx:xx:xx)', '组别', '备注'];
+    List<String> headers = [
+      '编号',
+      '姓名',
+      '代表队',
+      '成绩（按照xxxxxx的格式填写,代表xx:xx:xx）',
+      '备注'
+    ];
+    List<String> overviewHeaders = [
+      '编号',
+      '姓名',
+      '代表队',
+      '成绩(按照xxxxxx的格式填写,代表xx:xx:xx)',
+      '组别',
+      '备注'
+    ];
     // 将sheet1重命名为总表
     excel.rename("Sheet1", "总表");
     var overviewSheet = excel["总表"];
@@ -301,8 +321,7 @@ class ExcelGenerator {
         int longDistanceScore = athlete['long_distance_score'];
         int pronePaddleScore = athlete['prone_paddle_score'];
         int sprintScore = athlete['sprint_score'];
-        int totalScore =
-            longDistanceScore + pronePaddleScore + sprintScore;
+        int totalScore = longDistanceScore + pronePaddleScore + sprintScore;
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 2))
             .value = TextCellValue('${athlete['id']}');
