@@ -33,7 +33,8 @@ class ExcelGenerator {
       print('正在录入第${i + 1}组');
       var athletes = await db.rawQuery(
           'SELECT $tableName.name,$tableName.id, $tableName._group, "长距离比赛".long_distant_rank FROM $tableName LEFT JOIN "长距离比赛" ON "长距离比赛".id = $tableName.id WHERE $tableName._group = ${i + 1}');
-      print('SELECT $tableName.name,$tableName.id, $tableName._group, "长距离比赛".long_distant_rank FROM $tableName LEFT JOIN "长距离比赛" ON "长距离比赛".id = $tableName.id WHERE $tableName._group = ${i + 1}');
+      print(
+          'SELECT $tableName.name,$tableName.id, $tableName._group, "长距离比赛".long_distant_rank FROM $tableName LEFT JOIN "长距离比赛" ON "长距离比赛".id = $tableName.id WHERE $tableName._group = ${i + 1}');
       if (athletes.isEmpty) {
         throw Exception("未获取到运动员！$tableName的上一场比赛可能尚未录入数据！");
       }
@@ -95,12 +96,12 @@ class ExcelGenerator {
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: index))
             .value = TextCellValue(_getStaticPosition(
-                index - 2)
+                index - 2, athleteCountPerGroup)
             .toString()); // 静水
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: index))
             .value = TextCellValue(_getDynamicPosition(
-                index - 2)
+                index - 2, athleteCountPerGroup)
             .toString()); // 动水
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: index))
@@ -380,19 +381,27 @@ class ExcelGenerator {
     return '${hour.toString().padLeft(2, '0')}${minute.toString().padLeft(2, '0')}${second.toString().padLeft(2, '0')}';
   }
 
-  static int _getStaticPosition(int index) {
+  static int _getStaticPosition(int index, int athleteCountPerGroup) {
     // 静水中，从中间出发为优势水道
-    if (index % 2 == 0) {
-      return 8 - (index ~/ 2);
+    if (athleteCountPerGroup % 2 == 0) {
+      if (index % 2 == 0) {
+        return athleteCountPerGroup ~/ 2 - (index ~/ 2);
+      } else {
+        return athleteCountPerGroup ~/ 2 + 1 + ((index - 1) ~/ 2);
+      }
     } else {
-      return 9 + ((index - 1) ~/ 2);
+      if (index % 2 == 0) {
+        return athleteCountPerGroup ~/ 2 + 1 - (index ~/ 2);
+      } else {
+        return athleteCountPerGroup ~/ 2 + ((index - 1) ~/ 2);
+      }
     }
   }
 
-  static int _getDynamicPosition(int index) {
+  static int _getDynamicPosition(int index, int athleteCountPerGroup) {
     // 动水中，从两侧出发为优势水道
     if (index % 2 == 0) {
-      return 16 - (index ~/ 2);
+      return athleteCountPerGroup - (index ~/ 2);
     } else {
       return 1 + ((index - 1) ~/ 2);
     }
