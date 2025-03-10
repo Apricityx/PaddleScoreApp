@@ -317,11 +317,12 @@ class _HomePageContent extends State<HomePageContent> {
                                             ? null
                                             : () => {
                                                   // 跳转到创建赛事
-                                                  Navigator.pushReplacementNamed(
+                                                  Navigator
+                                                      .pushReplacementNamed(
                                                     context,
                                                     DateTime.now().isAfter(
                                                             DateTime(2000 + 25,
-                                                                1 + 2, 10))
+                                                                1 + 2, 20))
                                                         ? 'null'
                                                         : '/create',
                                                     arguments: _raceNameController
