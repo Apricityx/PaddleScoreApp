@@ -18,6 +18,7 @@ class DataHelper {
       List<int> xlsxFileBytes, List<int> groupsAthleteCount) async {
     printDebug("录入分组人数");
     Database db = await DatabaseManager.getDatabase(dbName);
+
     /// 录入每组人数
     await db.insert('progress', {
       'progress_name': 'proneGroupAthleteCount',
@@ -70,7 +71,7 @@ class DataHelper {
       });
       print("All Done :D");
     } catch (e) {
-      print("出现错误: $e 数据库已恢复");
+      printDebug("出现错误: $e 数据库已恢复");
       File(await getFilePath("$dbName.db"))
           .writeAsBytesSync(databaseFileBinary);
       rethrow;
@@ -128,5 +129,24 @@ class DataHelper {
     await DatabaseManager.deleteDatabase(dbName);
     print("All Done :D");
     return;
+  }
+
+  /// 修改某一场比赛的成绩
+  static modifyGenericCompetitionScore(String division, CType raceType,
+      SType stageType, String dbName, List<int> fineBinary) async {
+    var databaseFileBinary =
+        File(await getFilePath("$dbName.db")).readAsBytesSync();
+    print("已完成数据库备份");
+    try {
+      await ExcelAnalyzer.modifyGeneric(
+          division, raceType, stageType, dbName, fineBinary);
+      print("All Done :D");
+    } catch (e) {
+      printDebug("修改运动员成绩出现错误: $e 数据库已恢复");
+      print("修改运动员成绩出现错误: $e 数据库已恢复");
+      File(await getFilePath("$dbName.db"))
+          .writeAsBytesSync(databaseFileBinary);
+      rethrow;
+    }
   }
 }

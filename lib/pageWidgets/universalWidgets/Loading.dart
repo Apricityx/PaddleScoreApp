@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 class Loading{
   static Future startLoading(String text,context){
-    return  showDialog(
+    return showDialog(
         context: context,
         barrierDismissible: false, // 点击外部不可关闭
         builder: (BuildContext context) {

@@ -292,23 +292,28 @@ class _SprintRacePageState extends State<ShortDistancePage> {
         child: FutureBuilder(future: () async {
           var raceType = widget.raceBar.contains('趴板') ? '趴板' : '竞速';
           var raceNames = await getRaceProcess(division);
-          printDebug(raceNames);
+          printDebug("根据$raceNames生成state");
 
           /// 返回一个List,为每一个比赛阶段的名称
           List raceData = [];
           for (var i = 0; i < raceNames.length; i++) {
             try {
               DataState dataState;
-              // 两种情况,一种为初赛,一种为决赛
+              /// 两种情况,一种为初赛,一种为决赛
+              /// 支持修改功能，故添加nextImported字段
               printDebug("i = $i");
-              printDebug("raceNames[i] = ${raceNames[i]}");
+              // printDebug("raceNames[i] = ${raceNames[i]}");
               if (i == 0) {
                 dataState = DataState(
                     prevImported: true,
                     currDownloaded: await checkProgress(widget.raceEventName,
                         "${division}_${raceNames[0]}_${raceType}_downloaded"),
                     currImported: await checkProgress(widget.raceEventName,
-                        "${division}_${raceNames[0]}_${raceType}_imported"));
+                        "${division}_${raceNames[0]}_${raceType}_imported"),
+                    nextImported: raceNames.length == 1
+                        ? false
+                        : await checkProgress(widget.raceEventName,
+                            "${division}_${raceNames[1]}_${raceType}_imported"));
               } else {
                 dataState = DataState(
                     prevImported: await checkProgress(widget.raceEventName,
@@ -316,7 +321,8 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                     currDownloaded: await checkProgress(widget.raceEventName,
                         "${division}_${raceNames[i]}_${raceType}_downloaded"),
                     currImported: await checkProgress(widget.raceEventName,
-                        "${division}_${raceNames[i]}_${raceType}_imported"));
+                        "${division}_${raceNames[i]}_${raceType}_imported"),
+                    nextImported: false);
               }
 
               /// List的格式

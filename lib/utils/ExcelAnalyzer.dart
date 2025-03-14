@@ -59,10 +59,11 @@ class ExcelAnalyzer {
               competition,
               dbName);
           for (var athlete in processedGroup.keys) {
-            db.update(
-                "${division}_初赛_$competition", {"_group": processedGroup[athlete]},
+            db.update("${division}_初赛_$competition",
+                {"_group": processedGroup[athlete]},
                 where: "id = ?", whereArgs: [athlete]);
           }
+
           /// todo 将蛇形分组后的数据录入数据库
         }
         // // processedGroup的key为id，value为组别，将组别录入数据库1
@@ -602,12 +603,138 @@ class ExcelAnalyzer {
           columns: ['name'],
           where: 'id = ?',
           whereArgs: [athleteID]))[0]['name'];
-      db.insert("'$targetTable'", {
+      await db.insert("'$targetTable'", {
         'id': athleteID,
         'name': name,
         'time': '0',
         '_group': groups[athleteID]
       });
+    }
+    return;
+  }
+
+  static modifyGeneric(String division, CType c, SType s, String dbName,
+      List<int> fileBinary) async {
+// 需求：导入趴板或竞速的成绩表
+    // 确定下一场比赛的position与_group
+    print('导入通用比赛成绩');
+    Database db = await DatabaseManager.getDatabase(dbName);
+    var excel = Excel.decodeBytes(fileBinary);
+    var sheets = excel.sheets;
+    var tableName = "${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}";
+    var a = await db.query("'$tableName'", columns: ['id']);
+    int athletesNum = a.length;
+    // 遍历所有sheet
+    Map<String, int> promotionScore = {};
+    for (var sheetKey in sheets.keys) {
+      var sheet = sheets[sheetKey];
+      if (sheet == null) {
+        throw Exception("表格中没有$sheetKey");
+      }
+      var maxRows = sheet.maxRows;
+      Map<String, int> scores = {};
+      for (int i = 2; i < maxRows; i++) {
+        var id = sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i))
+            .value
+            .toString();
+        var time = sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i))
+            .value
+            .toString();
+        // 录入相应数据库
+        db.update("'$tableName'", {"time": time},
+            where: "id = ?", whereArgs: [id]);
+        scores[id] = _timeConvert(time);
+      }
+      const column = ["prone_paddle_score", "sprint_score"];
+      var matchType = '';
+      if (c == CType.sprint) {
+        matchType = column[1];
+      } else {
+        matchType = column[0];
+      }
+
+      /// 若为决赛则直接录入
+      if (s == SType.finals) {
+        scores = Map.fromEntries(scores.entries.toList()
+          ..sort((a, b) => a.value.compareTo(b.value)));
+        var sortedAthletes = scores.keys.toList();
+        for (int i = 0; i < sortedAthletes.length; i++) {
+          // 录入比赛分数
+          // 若时间为99999999则分数为0
+          if (s == SType.firstRound &&
+              scores[sortedAthletes[i]] == "99999999") {
+            print("未参赛运动员：${sortedAthletes[i]}，成绩为0");
+            db.update('athletes', {matchType: "0"},
+                where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          } else {
+            db.update('athletes', {matchType: rankToScore(i + 1)},
+                where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          }
+        }
+        return;
+      } else {
+        print("处理初赛");
+        // 若为初赛则晋级
+        scores = Map.fromEntries(scores.entries.toList()
+          ..sort((a, b) => a.value.compareTo(b.value)));
+        var sortedAthletes = scores.keys.toList();
+        int athleteCountPerGroup = await getAthleteCountPerGroup(dbName, c);
+        int promotionNum =
+            _getPromotionAthleteNum(athletesNum, athleteCountPerGroup);
+        print(
+            "比赛${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}的晋级人数为：$promotionNum");
+        print(promotionNum);
+        print(sortedAthletes);
+        print(tableName);
+        // 处理晋级的运动员
+        for (int i = 0;
+            i < promotionNum / getGroupNum(athletesNum, athleteCountPerGroup);
+            i++) {
+          // 将该运动员添加到promotionScore中
+          promotionScore[sortedAthletes[i]] = i;
+        }
+        // 处理未晋级运动员
+        for (int i =
+                (promotionNum / getGroupNum(athletesNum, athleteCountPerGroup))
+                    .ceil();
+            i < scores.length;
+            i++) {
+          // 如果初赛未参赛则分数为0，晋级后，后续比赛中若出现未参赛则按最后一名处理
+          if (s == SType.firstRound &&
+              scores[sortedAthletes[i]] == "99999999") {
+            print("未参赛运动员：${sortedAthletes[i]}，成绩为0");
+            db.update('athletes', {matchType: "0"},
+                where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          } else {
+            db.update('athletes', {matchType: rankToScore(i + 1)},
+                where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          }
+          print("未晋级运动员：${sortedAthletes[i]}");
+        }
+      }
+    }
+
+    /// 处理晋级后的运动员，将晋级后的运动员录入到下一场比赛表中
+    printDebug("正在处理晋级的运动员：$promotionScore");
+    String competition = cTypeTranslate(c);
+    var groups = await _getSnackGroup(
+        promotionScore.keys.map(int.parse).toList(), competition, dbName);
+    print(groups);
+    int athleteCountPerGroup = await getAthleteCountPerGroup(dbName, c);
+    var targetTable =
+        await _getNextTableName(dbName, division, c, s, athleteCountPerGroup);
+    print("将晋级运动员录入到$targetTable中");
+    for (var athleteID in groups.keys) {
+      // 获取名字
+      var name = (await db.query('athletes',
+          columns: ['name'],
+          where: 'id = ?',
+          whereArgs: [athleteID]))[0]['name'];
+      await db.update(
+          "'$targetTable'", {'time': '0', '_group': groups[athleteID]},
+          where: "id = ?", whereArgs: [athleteID]);
     }
     return;
   }
