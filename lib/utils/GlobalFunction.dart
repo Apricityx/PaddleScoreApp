@@ -85,12 +85,16 @@ Future<int> getAthleteCountByDivision(
 
 /// 通过运动员数量获取比赛数
 /// - [athleteCount] 运动员数量
-int getRaceCountByAthleteCount(int athleteCount) {
-  if (athleteCount <= 16) {
+Future<int> getRaceCountByAthleteCount(int athleteCount,CType c) async {
+  int athleteCountPerGroup =
+      await getAthleteCountPerGroup('PaddleScoreData', c);
+  if (athleteCount <= athleteCountPerGroup) {
     return 1;
-  } else if (athleteCount > 16 && athleteCount <= 64) {
+  } else if (athleteCount > athleteCountPerGroup &&
+      athleteCountPerGroup * 4 <= 64) {
     return 2;
-  } else if (athleteCount > 64 && athleteCount <= 128) {
+  } else if (athleteCount > athleteCountPerGroup * 4 &&
+      athleteCountPerGroup * 8 <= 128) {
     return 3;
   } else {
     return 4;

@@ -245,7 +245,10 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                 /// 获取当前组别的运动员总数和比赛轮数
                 final athleteCount = await getAthleteCountByDivision(
                     widget.raceEventName, division);
-                final raceCount = getRaceCountByAthleteCount(athleteCount);
+                var c = widget.raceBar.contains('趴板')
+                    ? CType.pronePaddle
+                    : CType.sprint;
+                final raceCount = await getRaceCountByAthleteCount(athleteCount,c);
                 return [athleteCount, raceCount]; // 返回一个列表，包含两个值
               }(), builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
