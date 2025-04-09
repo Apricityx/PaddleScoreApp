@@ -248,7 +248,7 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                 var c = widget.raceBar.contains('趴板')
                     ? CType.pronePaddle
                     : CType.sprint;
-                final raceCount = await getRaceCountByAthleteCount(athleteCount,c);
+                final raceCount = await getRaceCountByAthleteCount(athleteCount,c,widget.raceEventName);
                 return [athleteCount, raceCount]; // 返回一个列表，包含两个值
               }(), builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {

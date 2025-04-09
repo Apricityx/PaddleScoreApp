@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 
 class DatabaseManager {
   static Future<Database> getDatabase(String dbName) async {
+    print("获取数据库：$dbName");
     String path = await getFilePath("$dbName.db");
     return await openDatabase(
       path,

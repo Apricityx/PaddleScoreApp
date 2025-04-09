@@ -85,9 +85,10 @@ Future<int> getAthleteCountByDivision(
 
 /// 通过运动员数量获取比赛数
 /// - [athleteCount] 运动员数量
-Future<int> getRaceCountByAthleteCount(int athleteCount,CType c) async {
+Future<int> getRaceCountByAthleteCount(int athleteCount,CType c,String dbName) async {
+  print("getRaceCountByAthleteCount$dbName");
   int athleteCountPerGroup =
-      await getAthleteCountPerGroup('PaddleScoreData', c);
+      await getAthleteCountPerGroup(dbName, c);
   if (athleteCount <= athleteCountPerGroup) {
     return 1;
   } else if (athleteCount > athleteCountPerGroup &&
