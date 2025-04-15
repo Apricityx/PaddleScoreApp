@@ -31,6 +31,13 @@ class DataHelper {
       'progress_value': groupsAthleteCount[1],
       'description': '竞速每组的人数'
     });
+
+    await db.insert('progress', {
+      'progress_name': 'technicalGroupAthleteCount',
+      'progress_value': groupsAthleteCount[2],
+      'description': '技术每组的人数'
+    });
+
     printDebug(
         "已录入每组人数，分别为：${groupsAthleteCount[0]}, ${groupsAthleteCount[1]}");
 

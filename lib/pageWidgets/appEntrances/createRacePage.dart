@@ -29,11 +29,13 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
   List<String> divisions = [];
   int athleteNum = 0;
   ValidExcelResult isExcelValid = ValidExcelResult();
+
   // TextEditingController longDistanceController =
   //     TextEditingController(text: '16');
   TextEditingController proneDistanceController =
       TextEditingController(text: '16');
   TextEditingController sprintController = TextEditingController(text: '16');
+  TextEditingController techController = TextEditingController(text: '16');
 
   @override
   Widget build(BuildContext context) {
@@ -243,6 +245,14 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                       ),
                     ),
                     SizedBox(height: 16),
+                    TextField(
+                      keyboardType: TextInputType.number,
+                      controller: techController,
+                      decoration: const InputDecoration(
+                        label: Text("技术赛分组人数"),
+                      ),
+                    ),
+                    SizedBox(height: 16),
                     Center(
                       child: ElevatedButton.icon(
                         onPressed: button2Pressed && !button3Pressed
@@ -356,7 +366,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                                                 width: 8),
                                                             Expanded(
                                                               child: Text(
-                                                                "赛事名称：$raceName\n报名表路径：$filePath\n参赛总人数：$athleteNum人\n趴板项目每组人数：${proneDistanceController.text}人\n竞速项目每组人数：${sprintController.text}人",
+                                                                "赛事名称：$raceName\n报名表路径：$filePath\n参赛总人数：$athleteNum人\n趴板项目每组人数：${proneDistanceController.text}人\n技术项目每组人数：${techController.text}\n竞速项目每组人数：${sprintController.text}人",
                                                                 style: const TextStyle(
                                                                     fontSize:
                                                                         16,
@@ -525,7 +535,8 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                               xlsxFile.readAsBytesSync(), [
                                         // int.parse(longDistanceController.text),
                                         int.parse(proneDistanceController.text),
-                                        int.parse(sprintController.text)
+                                        int.parse(sprintController.text),
+                                        int.parse(techController.text)
                                       ]);
                                       Loading.stopLoading(context);
                                       ScaffoldMessenger.of(context)
@@ -535,7 +546,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                         ),
                                       );
                                       printDebug(
-                                          "分组情况为 ${await getAthleteCountPerGroup(raceName, CType.pronePaddle)} ${await getAthleteCountPerGroup(raceName, CType.sprint)}");
+                                          "分组情况为 ${await getAthleteCountPerGroup(raceName, CType.pronePaddle)} ${await getAthleteCountPerGroup(raceName, CType.sprint)} ${await getAthleteCountPerGroup(raceName, CType.technical)}");
 
                                       /// 返回首页并刷新
                                       Navigator.pushAndRemoveUntil(

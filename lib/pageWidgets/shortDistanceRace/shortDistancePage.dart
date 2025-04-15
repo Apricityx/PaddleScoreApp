@@ -96,7 +96,11 @@ class _SprintRacePageState extends State<ShortDistancePage> {
     if (widget.raceBar.contains('趴板')) {
       c = CType.pronePaddle;
     } else {
-      c = CType.sprint;
+      if (widget.raceBar.contains('技术')) {
+        c = CType.technical;
+      } else {
+        c = CType.sprint;
+      }
     }
 
     /// 查询该比赛类别的分组人数
@@ -247,8 +251,11 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                     widget.raceEventName, division);
                 var c = widget.raceBar.contains('趴板')
                     ? CType.pronePaddle
-                    : CType.sprint;
-                final raceCount = await getRaceCountByAthleteCount(athleteCount,c,widget.raceEventName);
+                    : widget.raceBar.contains('技术')
+                        ? CType.technical
+                        : CType.sprint;
+                final raceCount = await getRaceCountByAthleteCount(
+                    athleteCount, c, widget.raceEventName);
                 return [athleteCount, raceCount]; // 返回一个列表，包含两个值
               }(), builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
@@ -293,7 +300,11 @@ class _SprintRacePageState extends State<ShortDistancePage> {
         padding: const EdgeInsets.symmetric(horizontal: 50),
         // 2025.2.9 更换为FutureBuilder
         child: FutureBuilder(future: () async {
-          var raceType = widget.raceBar.contains('趴板') ? '趴板' : '竞速';
+          var raceType = widget.raceBar.contains('趴板')
+              ? '趴板'
+              : widget.raceBar.contains('技术')
+                  ? '技术'
+                  : '竞速';
           var raceNames = await getRaceProcess(division);
           printDebug("根据$raceNames生成state");
 
@@ -302,10 +313,10 @@ class _SprintRacePageState extends State<ShortDistancePage> {
           for (var i = 0; i < raceNames.length; i++) {
             try {
               DataState dataState;
+
               /// 两种情况,一种为初赛,一种为决赛
               /// 支持修改功能，故添加nextImported字段
-              printDebug("i = $i");
-              // printDebug("raceNames[i] = ${raceNames[i]}");
+              printDebug("raceNames[i] = ${raceNames[i]} division = $division");
               if (i == 0) {
                 dataState = DataState(
                     prevImported: true,
@@ -348,7 +359,11 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                   /// 需要信息:
                   return RaceStageCard(
                     stageName: snapshot.data![index]["name"],
-                    raceName: widget.raceBar.contains('趴板') ? '趴板' : '竞速',
+                    raceName: widget.raceBar.contains('趴板')
+                        ? '趴板'
+                        : widget.raceBar.contains('技术')
+                            ? '技术'
+                            : '竞速',
                     division: division,
                     dbName: widget.raceEventName,
                     index: index,

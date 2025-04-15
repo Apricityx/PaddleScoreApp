@@ -40,7 +40,7 @@ class RaceStageCard extends StatefulWidget {
 class _RaceStageCardState extends State<RaceStageCard> {
   @override
   Widget build(BuildContext context) {
-    CType raceType = widget.raceName == '趴板' ? CType.pronePaddle : CType.sprint;
+    CType raceType = widget.raceName == '趴板' ? CType.pronePaddle : widget.raceName == '技术'?CType.technical : CType.sprint;
     SType stageType;
     switch (widget.stageName) {
       case '初赛':

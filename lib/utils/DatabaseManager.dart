@@ -51,7 +51,8 @@ class DatabaseManager {
     division VARCHAR(255),
     long_distance_score INT,
     prone_paddle_score INT,
-    sprint_score INT
+    sprint_score INT,
+    technical_score INT
 );
     ''';
     await db.execute(sql);

@@ -45,7 +45,10 @@ Future<int> getAthleteCountPerGroup(String dbName, CType c) async {
     groupDbQueryName = 'proneGroupAthleteCount';
   } else if (c == CType.sprint) {
     groupDbQueryName = 'sprintGroupAthleteCount';
-  } else {
+  } else if (c == CType.technical) {
+    groupDbQueryName = 'technicalGroupAthleteCount';
+  }
+  else {
     throw "获取组别分组人数时传入错误的组别类型";
   }
   List<Map<String, dynamic>> result = await db.query('progress',
@@ -55,15 +58,17 @@ Future<int> getAthleteCountPerGroup(String dbName, CType c) async {
   return result.first['progress_value'];
 }
 
-enum CType { pronePaddle, sprint }
+enum CType { pronePaddle, sprint, technical }
 
 String cTypeTranslate(CType c) {
   if (c == CType.pronePaddle) {
     return "趴板";
   } else if (c == CType.sprint) {
     return "竞速";
+  } else if (c == CType.technical) {
+    return "技术";
   } else {
-    throw "传入错误的比赛类型";
+    throw "传入错误的组别类型";
   }
 }
 

@@ -13,12 +13,9 @@ import 'package:provider/provider.dart';
 import '../longDistanceRace/longDistancePage.dart';
 import '../shortDistanceRace/shortDistancePage.dart';
 
-// enum RaceType {
-//   longRace,
-//   shortRace1,
-//   shortRace2,
-//   teamRace,
-//   personalScore,
+// enum ExportType {
+//   asDivision,
+//   asTeam,
 // }
 
 class RacePage extends StatefulWidget {
@@ -34,6 +31,22 @@ class _RacePage extends State<RacePage> {
   final String raceName;
 
   _RacePage(this.raceName);
+
+  ExportType exportType = ExportType.asDivision;
+
+  void handleExportTypeChange(ExportType? value) {
+    setState(() {
+      exportType = value!;
+    });
+  }
+
+  bool isContainPronePaddle = false;
+
+  void handlePronePaddleChange(bool? value) {
+    setState(() {
+      isContainPronePaddle = value!;
+    });
+  }
 
   @override
   void initState() {
@@ -90,12 +103,28 @@ class _RacePage extends State<RacePage> {
                     return const CircularProgressIndicator();
                   }
                 }),
+            FutureBuilder(
+                future: checkProgress(raceName, 'long_distance_imported'),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return RaceNameCard(
+                        title: '技术赛',
+                        raceName: raceName,
+                        // subtitle: "点击进入",
+                        clickable: snapshot.data as bool);
+                  } else {
+                    return const CircularProgressIndicator();
+                  }
+                }),
             Card(
               elevation: 4,
               color: Theme.of(context).canvasColor,
               child: InkWell(
                 borderRadius: BorderRadius.circular(12.0),
                 onTap: () async {
+                  /// 跳转到exportPage
+                  Navigator.pushNamed(context, '/export',
+                      arguments: raceName);
                   var choice = await showDialog<String>(
                     context: context,
                     barrierDismissible: false,
@@ -103,6 +132,18 @@ class _RacePage extends State<RacePage> {
                       return AlertDialog(
                         title: const Text("请选择导出类型"),
                         actions: <Widget>[
+                          RadioListTile<ExportType>(
+                            title: Text('按组别导出'),
+                            value: ExportType.asDivision,
+                            groupValue: exportType,
+                            onChanged: handleExportTypeChange,
+                          ),
+                          RadioListTile<ExportType>(
+                            title: Text('按代表队导出'),
+                            value: ExportType.asTeam,
+                            groupValue: exportType,
+                            onChanged: handleExportTypeChange,
+                          ),
                           TextButton(
                             onPressed: () => Navigator.pop(context, null),
                             child: const Text('取消'),

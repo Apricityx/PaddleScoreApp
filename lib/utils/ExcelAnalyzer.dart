@@ -52,8 +52,12 @@ class ExcelAnalyzer {
         }
 
         /// 分别录入两场比赛的Group
-        List<String> competitions = ['趴板', '竞速'];
+        List<String> competitions = ['趴板', '竞速', '技术'];
         for (String competition in competitions) {
+          /// 如果分组为非青少年（没有U），且比赛为趴板，则跳过
+          if (!RegExp(r'U\d+').hasMatch(division) && competition == '趴板') {
+            continue;
+          }
           Map<String, int> processedGroup = await _getSnackGroup(
               scores.keys.toList().map(int.parse).toList(),
               competition,
@@ -63,28 +67,7 @@ class ExcelAnalyzer {
                 {"_group": processedGroup[athlete]},
                 where: "id = ?", whereArgs: [athlete]);
           }
-
-          /// todo 将蛇形分组后的数据录入数据库
         }
-        // // processedGroup的key为id，value为组别，将组别录入数据库1
-        // print("$division的processedGroup为$processedGroup");
-        // var tables = await DatabaseManager.getTableNames(db);
-        // // 更新所有初赛的group
-        // var tablesName = [
-        //   '${division}_初赛_趴板',
-        //   '${division}_初赛_竞速',
-        // ];
-        // for (var tableName in tablesName) {
-        //   if (!tables.contains(tableName)) {
-        //     continue;
-        //     // 跳过非青少年的组别
-        //   }
-        //   print("更新$tableName");
-        //   processedGroup.forEach((key, value) {
-        //     db.update(tableName, {"_group": value},
-        //         where: "id = ?", whereArgs: [key]);
-        //   });
-        // }
       }
     }
     print("Import finished, sort starting...");
@@ -190,6 +173,7 @@ class ExcelAnalyzer {
           'division': row[0]!.value.toString(),
           'prone_paddle_score': '0',
           'sprint_score': '0',
+          'technical_score': '0',
         },
       );
       // 先处理长距离的表
@@ -234,7 +218,17 @@ class ExcelAnalyzer {
 
   static Future<Map<String, int>> _getSnackGroup(
       List<int> sortedScores, String competition, String dbName) async {
-    CType c = competition == '趴板' ? CType.pronePaddle : CType.sprint;
+    CType c;
+    switch (competition) {
+      case '趴板':
+        c = CType.pronePaddle;
+        break;
+      case '技术':
+        c = CType.technical;
+        break;
+      default:
+        c = CType.sprint;
+    }
     int athleteCountPerGroup = await getAthleteCountPerGroup(dbName, c);
 
     /// 传入按时间递增排序的成绩表，越小越好
@@ -313,7 +307,7 @@ class ExcelAnalyzer {
     List<String> divisions =
         divisionsRaw.map((row) => row['division'] as String).toList();
     print('查询到的division：$divisions');
-    List<String> competitions = ['趴板', '竞速'];
+    List<String> competitions = ['趴板', '竞速', '技术'];
     // print('查询到的competition：$competitions');
     for (var competition in competitions) {
       for (var division in divisions) {
@@ -335,8 +329,19 @@ class ExcelAnalyzer {
         }
         print("比赛项目：$division $competition 共有$athleteCount名运动员");
         // 生成比赛表
-        CType c = competition == '趴板' ? CType.pronePaddle : CType.sprint;
+        CType c;
+        switch (competition) {
+          case '趴板':
+            c = CType.pronePaddle;
+            break;
+          case '技术':
+            c = CType.technical;
+            break;
+          default:
+            c = CType.sprint;
+        }
         int athleteCountPerGroup = await getAthleteCountPerGroup(dbName, c);
+        printDebug("正在创建比赛表：$division $competition");
         if (athleteCount <= athleteCountPerGroup) {
           await _generateScoreTable(
               dbName, athletes, division, "决赛", competition);
@@ -379,6 +384,7 @@ class ExcelAnalyzer {
     // await db.insert('progress',
     //     {'progress_name': '${division}_${schedule}_${competition}_imported'});
     Database db = await DatabaseManager.getDatabase(dbName);
+    printDebug("创建比赛表：$division $schedule $competition");
 
     /// 创建比赛表
     await db.execute('''
@@ -406,7 +412,11 @@ class ExcelAnalyzer {
     /// 生成比赛表
     /// 如果是非初赛，则不插入信息
     /// 如果是决赛且运动员数量不足$athleteCountPerGroup人，则直接确定分组，如果是初赛则留到后边再分组
-    CType c = competition == '趴板' ? CType.pronePaddle : CType.sprint;
+    CType c = competition == '趴板'
+        ? CType.pronePaddle
+        : competition == '技术'
+            ? CType.technical
+            : CType.sprint;
     int athleteCountPerGroup = await getAthleteCountPerGroup(dbName, c);
     if (schedule == "决赛" && athletes.length <= athleteCountPerGroup) {
       for (var athlete in athletes) {
@@ -518,12 +528,16 @@ class ExcelAnalyzer {
             where: "id = ?", whereArgs: [id]);
         scores[id] = _timeConvert(time);
       }
-      const column = ["prone_paddle_score", "sprint_score"];
+      const column = ["prone_paddle_score", "sprint_score", "technical_score"];
       var matchType = '';
       if (c == CType.sprint) {
         matchType = column[1];
       } else {
-        matchType = column[0];
+        if (c == CType.technical) {
+          matchType = column[2];
+        } else if (c == CType.pronePaddle) {
+          matchType = column[0];
+        }
       }
 
       /// 若为决赛则直接录入
@@ -647,12 +661,16 @@ class ExcelAnalyzer {
             where: "id = ?", whereArgs: [id]);
         scores[id] = _timeConvert(time);
       }
-      const column = ["prone_paddle_score", "sprint_score"];
+      const column = ["prone_paddle_score", "sprint_score", "technical_score"];
       var matchType = '';
       if (c == CType.sprint) {
         matchType = column[1];
       } else {
-        matchType = column[0];
+        if (c == CType.technical) {
+          matchType = column[2];
+        } else if (c == CType.pronePaddle) {
+          matchType = column[0];
+        }
       }
 
       /// 若为决赛则直接录入
