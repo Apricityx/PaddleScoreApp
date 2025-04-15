@@ -124,9 +124,9 @@ class _RaceStageCardState extends State<RaceStageCard> {
                                                   await FilePicker.platform
                                                       .saveFile(
                                                 dialogTitle:
-                                                    '导出${widget.division}_${widget.raceName} _${widget.stageName}分组名单(登记表)',
+                                                    '导出${widget.division}_${widget.raceName}_${widget.stageName}分组名单(登记表)',
                                                 fileName:
-                                                    '${widget.division}_${widget.raceName} _${widget.stageName}成绩登记表.xlsx',
+                                                    '${widget.division}_${widget.raceName}_${widget.stageName}成绩登记表.xlsx',
                                               );
                                               if (filePath == null) {
                                                 Loading.stopLoading(context);

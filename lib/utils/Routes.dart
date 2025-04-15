@@ -12,5 +12,5 @@ var routes = {
   '/create': (context) => CreateRacePage(), // 创建比赛页面，带参数
   '/settings': (context) => SettingsPage(),
   '/race': (context) => RacePage(raceName: '',),
-  '/export': (context) => ExportPage(),
+  '/export': (context) => ExportPage(raceName: '',),
 };

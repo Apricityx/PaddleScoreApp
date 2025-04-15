@@ -32,22 +32,6 @@ class _RacePage extends State<RacePage> {
 
   _RacePage(this.raceName);
 
-  ExportType exportType = ExportType.asDivision;
-
-  void handleExportTypeChange(ExportType? value) {
-    setState(() {
-      exportType = value!;
-    });
-  }
-
-  bool isContainPronePaddle = false;
-
-  void handlePronePaddleChange(bool? value) {
-    setState(() {
-      isContainPronePaddle = value!;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
@@ -69,7 +53,7 @@ class _RacePage extends State<RacePage> {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     return RaceNameCard(
-                        title: '6000米长距离赛（青少年3000米）',
+                        title: '长距离赛',
                         raceName: raceName,
                         // subtitle: "点击进入",
                         clickable: snapshot.data as bool);
@@ -82,7 +66,7 @@ class _RacePage extends State<RacePage> {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     return RaceNameCard(
-                        title: '200米趴板划水赛（仅限青少年）',
+                        title: '趴板划水赛（仅青少年）',
                         raceName: raceName,
                         // subtitle: "点击进入",
                         clickable: snapshot.data as bool);
@@ -95,7 +79,7 @@ class _RacePage extends State<RacePage> {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     return RaceNameCard(
-                        title: '500米竞速赛',
+                        title: '竞速赛',
                         raceName: raceName,
                         // subtitle: "点击进入",
                         clickable: snapshot.data as bool);
@@ -123,80 +107,8 @@ class _RacePage extends State<RacePage> {
                 borderRadius: BorderRadius.circular(12.0),
                 onTap: () async {
                   /// 跳转到exportPage
-                  Navigator.pushNamed(context, '/export',
-                      arguments: raceName);
-                  var choice = await showDialog<String>(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text("请选择导出类型"),
-                        actions: <Widget>[
-                          RadioListTile<ExportType>(
-                            title: Text('按组别导出'),
-                            value: ExportType.asDivision,
-                            groupValue: exportType,
-                            onChanged: handleExportTypeChange,
-                          ),
-                          RadioListTile<ExportType>(
-                            title: Text('按代表队导出'),
-                            value: ExportType.asTeam,
-                            groupValue: exportType,
-                            onChanged: handleExportTypeChange,
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, null),
-                            child: const Text('取消'),
-                          ),
-                          TextButton(
-                            // 这里添加了空的Text widget
-                            onPressed: () => Navigator.pop(context, "A"),
-                            child: const Text('按组别导出'), // 补全了 child 属性
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, "B"),
-                            child: const Text('按代表队导出'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                  Loading.startLoading("导出中", context);
-                  List<int> finalScoreBinary;
-                  if (choice == 'A') {
-                    finalScoreBinary = await DataHelper.exportFinalScore(
-                        raceName, ExportType.asDivision);
-                  } else if (choice == 'B') {
-                    finalScoreBinary = await DataHelper.exportFinalScore(
-                        raceName, ExportType.asTeam);
-                  } else {
-                    Loading.stopLoading(context);
-                    return;
-                  }
-                  try {
-                    await Future.delayed(Duration.zero, () async {
-                      String? filePath = await FilePicker.platform.saveFile(
-                        dialogTitle: '保存个人积分',
-                        fileName: '个人积分 - $raceName.xlsx',
-                      );
-                      if (filePath == null) {
-                        throw Exception("用户未选择文件");
-                      } else {
-                        File file = File(filePath);
-
-                        // printDebug("!!TEST!!$choice");
-
-                        await file.writeAsBytes(finalScoreBinary);
-                        printDebug("文件已保存到:$filePath");
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('积分表下载完成')),
-                        );
-                        Loading.stopLoading(context);
-                      }
-                    });
-                  } catch (e) {
-                    Loading.stopLoading(context);
-                  }
+                  printDebug("跳转到/export/$raceName");
+                  Navigator.pushNamed(context, '/export', arguments: raceName);
                 },
                 child: const ListTile(
                   title: Text('导出比赛积分表'),

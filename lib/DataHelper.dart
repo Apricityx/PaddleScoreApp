@@ -125,8 +125,9 @@ class DataHelper {
   /// 导出最终成绩表，给出数据库名，返回一个List<int>，即Excel文件的二进制数据
   /// [dbName] 数据库名
   /// [e] 导出类型
-  static Future<List<int>> exportFinalScore(String dbName, ExportType e) async {
-    var temp = await ExcelGenerator.exportScores(dbName, e);
+  static Future<List<int>> exportFinalScore(
+      String dbName, ExportType e, bool isContainProne) async {
+    var temp = await ExcelGenerator.exportScores(dbName, e, isContainProne);
     print("All Done :D");
     return temp;
   }

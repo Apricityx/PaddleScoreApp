@@ -204,7 +204,7 @@ class TestPage extends StatelessWidget {
                 String dbName = "athlete";
                 String path = "$testFilePath/最终积分表2.xlsx";
                 var fileBinary = await DataHelper.exportFinalScore(
-                    dbName, ExportType.asDivision);
+                    dbName, ExportType.asDivision, true);
                 File file = File(path);
                 await file.writeAsBytes(fileBinary);
                 print('文件已保存到: $path');

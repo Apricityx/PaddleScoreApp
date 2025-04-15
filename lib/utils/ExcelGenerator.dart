@@ -263,7 +263,10 @@ class ExcelGenerator {
     return fileBytes;
   }
 
-  static Future<List<int>> exportScores(String dbName, ExportType e) async {
+  /// 用于导出最终的成绩表
+  /// 传入参数包括e和isContainProne，前者用于确定导出类型，后者用于判断是否需要包含趴板成绩
+  static Future<List<int>> exportScores(
+      String dbName, ExportType e, bool isContainProne) async {
     Database db = await DatabaseManager.getDatabase(dbName);
     // var divisions = await getDivisions(dbName);
     var excel = Excel.createExcel();
@@ -281,7 +284,7 @@ class ExcelGenerator {
     for (var sheetName in sheetNames) {
       var sheet = excel[sheetName];
       // 设置标题
-      sheet.merge(CellIndex.indexByString('A1'), CellIndex.indexByString('F1'),
+      sheet.merge(CellIndex.indexByString('A1'), CellIndex.indexByString('H1'),
           customValue: TextCellValue('$sheetName成绩表'));
       // 设置合并单元格的样式
       var cell = sheet.cell(CellIndex.indexByString('A1'));
@@ -291,67 +294,130 @@ class ExcelGenerator {
         horizontalAlign: HorizontalAlign.Center,
       );
       List<String> headers = [];
-      if (e == ExportType.asDivision) {
-        headers = ['编号', '姓名', '代表队', '长距离积分', '竞速积分', '趴板积分', '总积分', '备注'];
-      } else {
-        headers = ['编号', '姓名', '分组', '长距离积分', '竞速积分', '趴板积分', '总积分', '备注'];
-      }
-      for (int i = 0; i < headers.length; i++) {
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 1))
-          ..value = TextCellValue(headers[i])
-          ..cellStyle = CellStyle(
-            bold: true,
-            horizontalAlign: HorizontalAlign.Center,
-          );
-      }
-      // 从数据库读取数据
       List<Map> athletes;
       if (e == ExportType.asDivision) {
         athletes = await db.rawQuery('''
-      SELECT id,name,team,long_distance_score,prone_paddle_score,sprint_score FROM athletes WHERE division = '$sheetName'
-    ''');
+            SELECT id,name,division,long_distance_score,prone_paddle_score,sprint_score,technical_score FROM athletes WHERE division = '$sheetName'
+          ''');
       } else {
         athletes = await db.rawQuery('''
-      SELECT id,name,division,long_distance_score,prone_paddle_score,sprint_score FROM athletes WHERE team = '$sheetName'
-    ''');
+            SELECT id,name,team,long_distance_score,prone_paddle_score,sprint_score,technical_score FROM athletes WHERE team = '$sheetName'
+          ''');
+      }
+      if (isContainProne) {
+        /// 1. 包含趴板
+        headers = [
+          '编号',
+          '姓名',
+          '代表队',
+          '长距离积分',
+          '趴板积分',
+          '竞速积分',
+          '技术积分',
+          '总积分',
+          '备注'
+        ];
+        for (int i = 0; i < headers.length; i++) {
+          sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 1))
+            ..value = TextCellValue(headers[i])
+            ..cellStyle = CellStyle(
+              bold: true,
+              horizontalAlign: HorizontalAlign.Center,
+            );
+        }
+        for (int i = 0; i < athletes.length; i++) {
+          var athlete = athletes[i];
+          int longDistanceScore = athlete['long_distance_score'];
+          int pronePaddleScore = athlete['prone_paddle_score'];
+          int sprintScore = athlete['sprint_score'];
+          int technicScore = athlete['technical_score'];
+          int totalScore =
+              longDistanceScore + pronePaddleScore + sprintScore + technicScore;
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 2))
+              .value = TextCellValue('${athlete['id']}');
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: i + 2))
+              .value = TextCellValue('${athlete['name']}');
+          if (e == ExportType.asDivision) {
+            sheet
+                .cell(
+                    CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 2))
+                .value = TextCellValue('${athlete['division']}');
+          } else {
+            sheet
+                .cell(
+                    CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 2))
+                .value = TextCellValue('${athlete['team']}');
+          }
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 2))
+              .value = TextCellValue('$longDistanceScore');
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 2))
+              .value = TextCellValue('$pronePaddleScore');
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i + 2))
+              .value = TextCellValue('$sprintScore');
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i + 2))
+              .value = TextCellValue('$technicScore');
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: i + 2))
+              .value = TextCellValue('$totalScore');
+        }
+      } else {
+        /// 2. 不包含趴板
+        headers = ['编号', '姓名', '代表队', '长距离积分', '竞速积分', '技术积分', '总积分', '备注'];
+        for (int i = 0; i < headers.length; i++) {
+          sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 1))
+            ..value = TextCellValue(headers[i])
+            ..cellStyle = CellStyle(
+              bold: true,
+              horizontalAlign: HorizontalAlign.Center,
+            );
+        }
+        for (int i = 0; i < athletes.length; i++) {
+          var athlete = athletes[i];
+          int longDistanceScore = athlete['long_distance_score'];
+          int sprintScore = athlete['sprint_score'];
+          int technicScore = athlete['technical_score'];
+          int totalScore = longDistanceScore + sprintScore + technicScore;
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 2))
+              .value = TextCellValue('${athlete['id']}');
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: i + 2))
+              .value = TextCellValue('${athlete['name']}');
+          if (e == ExportType.asDivision) {
+            sheet
+                .cell(
+                    CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 2))
+                .value = TextCellValue('${athlete['division']}');
+          } else {
+            sheet
+                .cell(
+                    CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 2))
+                .value = TextCellValue('${athlete['team']}');
+          }
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 2))
+              .value = TextCellValue('$longDistanceScore');
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 2))
+              .value = TextCellValue('$sprintScore');
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i + 2))
+              .value = TextCellValue('$technicScore');
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i + 2))
+              .value = TextCellValue('$totalScore');
+        }
       }
 
-      print(athletes);
-      for (int i = 0; i < athletes.length; i++) {
-        var athlete = athletes[i];
-        int longDistanceScore = athlete['long_distance_score'];
-        int pronePaddleScore = athlete['prone_paddle_score'];
-        int sprintScore = athlete['sprint_score'];
-        int totalScore = longDistanceScore + pronePaddleScore + sprintScore;
-        sheet
-            .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 2))
-            .value = TextCellValue('${athlete['id']}');
-        sheet
-            .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: i + 2))
-            .value = TextCellValue('${athlete['name']}');
-        if (e == ExportType.asDivision) {
-          sheet
-              .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 2))
-              .value = TextCellValue('${athlete['team']}');
-        } else {
-          sheet
-              .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 2))
-              .value = TextCellValue('${athlete['division']}');
-        }
-        sheet
-            .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 2))
-            .value = TextCellValue('$longDistanceScore');
-        sheet
-            .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 2))
-            .value = TextCellValue('$pronePaddleScore');
-        sheet
-            .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i + 2))
-            .value = TextCellValue('$sprintScore');
-        sheet
-            .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i + 2))
-            .value = TextCellValue('$totalScore');
-      }
+      // 从数据库读取数据
     }
+
     excel.delete('Sheet1');
     var fileBytes = excel.encode();
     if (fileBytes == null) {
@@ -399,11 +465,13 @@ class ExcelGenerator {
   }
 
   static int _getDynamicPosition(int index, int athleteCountPerGroup) {
-    // 动水中，从两侧出发为优势水道
-    if (index % 2 == 0) {
-      return athleteCountPerGroup - (index ~/ 2);
-    } else {
-      return 1 + ((index - 1) ~/ 2);
-    }
+    return index + 1;
+    //   // 动水中，从两侧出发为优势水道
+    //   if (index % 2 == 0) {
+    //     return athleteCountPerGroup - (index ~/ 2);
+    //   } else {
+    //     return 1 + ((index - 1) ~/ 2);
+    //   }
+    // }
   }
 }
