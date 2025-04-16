@@ -158,7 +158,7 @@ class RaceNameCard extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => title == "6000米长距离赛（青少年3000米）"
+                      builder: (context) => title == "长距离赛"
                           ? LongDistanceRacePage(
                               raceBar: raceBar, raceEventName: raceName)
                           : ShortDistancePage(
