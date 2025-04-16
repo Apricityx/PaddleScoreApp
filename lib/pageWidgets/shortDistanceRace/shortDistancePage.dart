@@ -314,7 +314,7 @@ class _SprintRacePageState extends State<ShortDistancePage> {
             try {
               DataState dataState;
 
-              /// 两种情况,一种为初赛,一种为决赛
+              /// 3种情况,一种为初赛,一种为决赛，一种为其他
               /// 支持修改功能，故添加nextImported字段
               printDebug("raceNames[i] = ${raceNames[i]} division = $division");
               if (i == 0) {
@@ -328,7 +328,8 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                         ? false
                         : await checkProgress(widget.raceEventName,
                             "${division}_${raceNames[1]}_${raceType}_imported"));
-              } else {
+              }
+              else if (i==raceNames.length - 1){
                 dataState = DataState(
                     prevImported: await checkProgress(widget.raceEventName,
                         "${division}_${raceNames[i - 1]}_${raceType}_imported"),
@@ -337,6 +338,17 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                     currImported: await checkProgress(widget.raceEventName,
                         "${division}_${raceNames[i]}_${raceType}_imported"),
                     nextImported: false);
+              }
+              else {
+                dataState = DataState(
+                    prevImported: await checkProgress(widget.raceEventName,
+                        "${division}_${raceNames[i - 1]}_${raceType}_imported"),
+                    currDownloaded: await checkProgress(widget.raceEventName,
+                        "${division}_${raceNames[i]}_${raceType}_downloaded"),
+                    currImported: await checkProgress(widget.raceEventName,
+                        "${division}_${raceNames[i]}_${raceType}_imported"),
+                    nextImported: await checkProgress(widget.raceEventName,
+                        "${division}_${raceNames[i + 1]}_${raceType}_imported"));
               }
 
               /// List的格式
