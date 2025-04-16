@@ -318,7 +318,7 @@ class _HomePageContent extends State<HomePageContent> {
                                             : () => {
                                                   // 跳转到创建赛事
                                                   Navigator
-                                                      .pushReplacementNamed(
+                                                      .pushNamed(
                                                     context,
                                                     DateTime.now().isAfter(
                                                             DateTime(2000 + 25,

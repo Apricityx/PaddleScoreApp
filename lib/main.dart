@@ -179,10 +179,10 @@ class _MyHomePageState extends State<MyHomePage> {
       case 0:
         page = const HomePageContent();
         break;
+      // case 1:
+      //   page = const Placeholder();
+      //   break;
       case 1:
-        page = const Placeholder();
-        break;
-      case 2:
         page = const SettingsPage();
         break;
       default:
@@ -233,10 +233,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                 icon: Icon(Icons.home),
                                 label: Text("首页"),
                               ),
-                              NavigationRailDestination(
-                                icon: Icon(Icons.access_time),
-                                label: Text("历史赛事"),
-                              ),
+                              // NavigationRailDestination(
+                              //   icon: Icon(Icons.access_time),
+                              //   label: Text("历史赛事"),
+                              // ),
                               NavigationRailDestination(
                                 icon: Icon(Icons.settings),
                                 label: Text("设置"),
@@ -271,6 +271,8 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class UnknownRouteScreen extends StatelessWidget {
+  const UnknownRouteScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

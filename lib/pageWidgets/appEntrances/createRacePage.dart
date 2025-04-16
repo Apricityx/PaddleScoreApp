@@ -233,7 +233,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                       keyboardType: TextInputType.number,
                       controller: proneDistanceController,
                       decoration: const InputDecoration(
-                        label: Text("200m趴板划水赛分组人数"),
+                        label: Text("趴板划水赛分组人数"),
                       ),
                     ),
                     SizedBox(height: 16),
@@ -241,7 +241,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                       keyboardType: TextInputType.number,
                       controller: sprintController,
                       decoration: const InputDecoration(
-                        label: Text("500m竞速划水赛分组人数"),
+                        label: Text("竞速赛分组人数"),
                       ),
                     ),
                     SizedBox(height: 16),
@@ -257,12 +257,9 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                       child: ElevatedButton.icon(
                         onPressed: button2Pressed && !button3Pressed
                             ? () {
-                                print("111");
-                                print(button3Pressed);
                                 setState(() {
                                   button3Pressed = true;
                                 });
-                                print(button3Pressed);
                               }
                             : null,
                         icon: const Icon(Icons.check),
@@ -318,7 +315,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                                       vertical: 12,
                                                       horizontal: 16),
                                                   child: Row(
-                                                    children: const [
+                                                    children: [
                                                       Icon(Icons.info,
                                                           color: Colors.green),
                                                       SizedBox(width: 8),
@@ -529,6 +526,8 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                     File xlsxFile = File(filePath);
                                     try {
                                       /// 开始录入数据库
+                                      printDebug(
+                                          "前端的分组情况为 $proneDistanceController.text $sprintController.text $techController.text");
                                       await DataHelper
                                           .loadExcelFileToAthleteDatabase(
                                               raceName,
@@ -546,7 +545,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                         ),
                                       );
                                       printDebug(
-                                          "分组情况为 ${await getAthleteCountPerGroup(raceName, CType.pronePaddle)} ${await getAthleteCountPerGroup(raceName, CType.sprint)} ${await getAthleteCountPerGroup(raceName, CType.technical)}");
+                                          "录入的分组情况为 ${await getAthleteCountPerGroup(raceName, CType.pronePaddle)} ${await getAthleteCountPerGroup(raceName, CType.sprint)} ${await getAthleteCountPerGroup(raceName, CType.technical)}");
 
                                       /// 返回首页并刷新
                                       Navigator.pushAndRemoveUntil(

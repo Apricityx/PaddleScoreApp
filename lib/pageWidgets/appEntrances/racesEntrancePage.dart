@@ -147,7 +147,7 @@ class RaceNameCard extends StatelessWidget {
         // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
         color: clickable
             ? Theme.of(context).canvasColor
-            : Theme.of(context).colorScheme.secondary,
+            : Color(0xFFB0BEC5),
         child: InkWell(
           borderRadius: BorderRadius.circular(12.0),
           // color: Theme.of(context).colorScheme.secondary,

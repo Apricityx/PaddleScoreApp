@@ -46,38 +46,38 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SizedBox(height: 16.0),
           // 语言选择
-          Card(
-            child: ListTile(
-              title: const Text('短距离每组人数'),
-              subtitle: const Text('短距离分组中，每组有多少个人'),
-              trailing: SizedBox(
-                width: 100, // 限制输入框宽度
-                child: TextField(
-                  controller: _shortController, // 绑定控制器
-                  keyboardType: TextInputType.number, // 设置键盘类型为数字键盘
-                  decoration: const InputDecoration(
-                    hintText: '输入每组人数', // 提示文字
-                    errorText: null, // 动态错误提示可用来反馈用户非法输入
-                  ),
-                  onChanged: (value) {
-                    if (value.isNotEmpty && int.tryParse(value) != null) {
-                      SettingService.settings['shortNumber'] = int.parse(value);
-                      SettingService.saveSettings(context);
-                    } else {
-                      SettingService.settings['shortNumber'] = null; // 或者设置为 0 等默认值
-                      ScaffoldMessenger.of(context)
-                        ..clearSnackBars()
-                        ..showSnackBar(
-                          const SnackBar(
-                            content: Text('请输入正整数'),
-                          ),
-                        );
-                    }
-                  },
-                ),
-              ),
-            ),
-          )
+          // Card(
+          //   child: ListTile(
+          //     title: const Text('短距离每组人数'),
+          //     subtitle: const Text('短距离分组中，每组有多少个人'),
+          //     trailing: SizedBox(
+          //       width: 100, // 限制输入框宽度
+          //       child: TextField(
+          //         controller: _shortController, // 绑定控制器
+          //         keyboardType: TextInputType.number, // 设置键盘类型为数字键盘
+          //         decoration: const InputDecoration(
+          //           hintText: '输入每组人数', // 提示文字
+          //           errorText: null, // 动态错误提示可用来反馈用户非法输入
+          //         ),
+          //         onChanged: (value) {
+          //           if (value.isNotEmpty && int.tryParse(value) != null) {
+          //             SettingService.settings['shortNumber'] = int.parse(value);
+          //             SettingService.saveSettings(context);
+          //           } else {
+          //             SettingService.settings['shortNumber'] = null; // 或者设置为 0 等默认值
+          //             ScaffoldMessenger.of(context)
+          //               ..clearSnackBars()
+          //               ..showSnackBar(
+          //                 const SnackBar(
+          //                   content: Text('请输入正整数'),
+          //                 ),
+          //               );
+          //           }
+          //         },
+          //       ),
+          //     ),
+          //   ),
+          // )
         ],
       ),
     );

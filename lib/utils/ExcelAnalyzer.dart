@@ -51,7 +51,7 @@ class ExcelAnalyzer {
               where: "id = ?", whereArgs: [scores.keys.toList()[i]]);
         }
 
-        /// 分别录入两场比赛的Group
+        /// 分别录入3场比赛的Group
         List<String> competitions = ['趴板', '竞速', '技术'];
         for (String competition in competitions) {
           /// 如果分组为非青少年（没有U），且比赛为趴板，则跳过
@@ -367,7 +367,7 @@ class ExcelAnalyzer {
           await _generateScoreTable(
               dbName, athletes, division, "决赛", competition);
         } else {
-          throw Exception("运动员数量超过256，无法生成比赛表");
+          throw Exception("设置的运动员数量超过支持，无法生成比赛表");
           // print("运动员数量超过256，无法生成比赛表");
         }
       }

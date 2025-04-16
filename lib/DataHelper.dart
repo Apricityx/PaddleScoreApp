@@ -18,35 +18,39 @@ class DataHelper {
       List<int> xlsxFileBytes, List<int> groupsAthleteCount) async {
     printDebug("录入分组人数");
     Database db = await DatabaseManager.getDatabase(dbName);
+    try {
+      /// 录入每组人数
+      await db.insert('progress', {
+        'progress_name': 'proneGroupAthleteCount',
+        'progress_value': groupsAthleteCount[0],
+        'description': '趴板每组的人数'
+      });
 
-    /// 录入每组人数
-    await db.insert('progress', {
-      'progress_name': 'proneGroupAthleteCount',
-      'progress_value': groupsAthleteCount[0],
-      'description': '趴板每组的人数'
-    });
+      await db.insert('progress', {
+        'progress_name': 'sprintGroupAthleteCount',
+        'progress_value': groupsAthleteCount[1],
+        'description': '竞速每组的人数'
+      });
 
-    await db.insert('progress', {
-      'progress_name': 'sprintGroupAthleteCount',
-      'progress_value': groupsAthleteCount[1],
-      'description': '竞速每组的人数'
-    });
+      await db.insert('progress', {
+        'progress_name': 'technicalGroupAthleteCount',
+        'progress_value': groupsAthleteCount[2],
+        'description': '技术每组的人数'
+      });
 
-    await db.insert('progress', {
-      'progress_name': 'technicalGroupAthleteCount',
-      'progress_value': groupsAthleteCount[2],
-      'description': '技术每组的人数'
-    });
+      printDebug(
+          "已录入每组人数，分别为：${groupsAthleteCount[0]}, ${groupsAthleteCount[1]}");
 
-    printDebug(
-        "已录入每组人数，分别为：${groupsAthleteCount[0]}, ${groupsAthleteCount[1]}");
+      /// 初始化运动员信息表
+      await ExcelAnalyzer.initAthlete(dbName, xlsxFileBytes);
 
-    /// 初始化运动员信息表
-    await ExcelAnalyzer.initAthlete(dbName, xlsxFileBytes);
-
-    await db.update('progress', {'progress_value': 1},
-        where: 'progress_name = ?', whereArgs: ['athlete_imported']);
-    print("All Done :D");
+      await db.update('progress', {'progress_value': 1},
+          where: 'progress_name = ?', whereArgs: ['athlete_imported']);
+      print("All Done :D");
+    } catch (e) {
+      db.close();
+      rethrow;
+    }
     return;
   }
 
