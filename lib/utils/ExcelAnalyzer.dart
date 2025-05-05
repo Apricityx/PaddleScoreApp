@@ -549,7 +549,7 @@ class ExcelAnalyzer {
           // 录入比赛分数
           // 若时间为99999999则分数为0
           if (s == SType.firstRound &&
-              scores[sortedAthletes[i]] == "99999999") {
+              scores[sortedAthletes[i]] == 99999999) {
             print("未参赛运动员：${sortedAthletes[i]}，成绩为0");
             db.update('athletes', {matchType: "0"},
                 where: "id = ?", whereArgs: [sortedAthletes[i]]);
@@ -588,7 +588,7 @@ class ExcelAnalyzer {
             i++) {
           // 如果初赛未参赛则分数为0，晋级后，后续比赛中若出现未参赛则按最后一名处理
           if (s == SType.firstRound &&
-              scores[sortedAthletes[i]] == "99999999") {
+              scores[sortedAthletes[i]] == 99999999) {
             print("未参赛运动员：${sortedAthletes[i]}，成绩为0");
             db.update('athletes', {matchType: "0"},
                 where: "id = ?", whereArgs: [sortedAthletes[i]]);
@@ -682,7 +682,7 @@ class ExcelAnalyzer {
           // 录入比赛分数
           // 若时间为99999999则分数为0
           if (s == SType.firstRound &&
-              scores[sortedAthletes[i]] == "99999999") {
+              scores[sortedAthletes[i]] == 99999999) {
             print("未参赛运动员：${sortedAthletes[i]}，成绩为0");
             db.update('athletes', {matchType: "0"},
                 where: "id = ?", whereArgs: [sortedAthletes[i]]);
@@ -721,7 +721,7 @@ class ExcelAnalyzer {
             i++) {
           // 如果初赛未参赛则分数为0，晋级后，后续比赛中若出现未参赛则按最后一名处理
           if (s == SType.firstRound &&
-              scores[sortedAthletes[i]] == "99999999") {
+              scores[sortedAthletes[i]] == 99999999) {
             print("未参赛运动员：${sortedAthletes[i]}，成绩为0");
             db.update('athletes', {matchType: "0"},
                 where: "id = ?", whereArgs: [sortedAthletes[i]]);
