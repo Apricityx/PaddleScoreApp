@@ -121,7 +121,7 @@ flutter run -d macos
 ```
 
 > [!NOTE]
-> 仓库当前包含 `android/` 目录，但现有功能流和文件处理方式更偏向桌面端使用；README 中的运行示例因此以桌面平台为主。
+> 仓库当前可以打包 `android/` 平台产物，但现有功能流和文件处理方式更偏向桌面端使用；README 中的运行示例因此以桌面平台为主。
 
 ### 构建产物
 
@@ -131,7 +131,7 @@ flutter build apk
 ```
 
 > [!TIP]
-> 项目包含一个本地维护的 `excel` 依赖分支，位于 `fork/excel-4.0.6`，拉取仓库后直接执行 `flutter pub get` 即可。
+> 项目包含一个本地维护的 `excel` 依赖分支，位于 `fork/excel-4.0.6`，用于提供对 wps 的 excel 格式读取。拉取仓库后直接执行 `flutter pub get` 即可。
 
 <a id="screenshots"></a>
 
