@@ -9,9 +9,10 @@ on:
 
 jobs:
   build-windows:
-    # windows-latest 已迁移到 VS 2026 (主版本 18)，Flutter 3.29 只识别到 17，
-    # 会退化成 -G "Visual Studio 16 2019" 导致 CMake 失败。固定到带 VS 2022 的镜像。
-    runs-on: windows-2025
+    # Flutter 3.29 只支持到 VS 2022（主版本 17）；windows-latest 与 windows-2025
+    # 现在都指向 VS 2026(18) 镜像，会退化成 -G "Visual Studio 16 2019" 而失败。
+    # 待升级 Flutter（>= 3.41 才认识 VS 2026）后可去掉此固定。
+    runs-on: windows-2022
 
     steps:
       - name: Checkout repository
