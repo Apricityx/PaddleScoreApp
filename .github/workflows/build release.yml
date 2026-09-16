@@ -9,7 +9,9 @@ on:
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    # windows-latest 已迁移到 VS 2026 (主版本 18)，Flutter 3.29 只识别到 17，
+    # 会退化成 -G "Visual Studio 16 2019" 导致 CMake 失败。固定到带 VS 2022 的镜像。
+    runs-on: windows-2025
 
     steps:
       - name: Checkout repository
